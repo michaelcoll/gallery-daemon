@@ -1,0 +1,13 @@
+# ide
+.idea/*
+!.idea/runConfigurations
+!.idea/codeStyles
+!.idea/inspectionProfiles
+*.iml
+
+
+# build
+gallery-daemon
+
+# database
+photos.db

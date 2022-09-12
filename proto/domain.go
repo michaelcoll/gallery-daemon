@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
-package indexer
+package gallery
 
 import (
-	"database/sql"
 	"github.com/michaelcoll/gallery-daemon/domain"
-	"log"
 )
 
-// Index indexes a photo
-func Index(db *sql.DB, photo *domain.Photo) error {
-	_ = extractExif(photo)
+func (x *Photo) New(photo *domain.Photo) *Photo {
+	return &Photo{
+		Hash: photo.Hash,
+		Path: photo.Path,
 
-	if err := insertPhotoIntoDB(db, photo); err != nil {
-		log.Printf("\nhash %s\n", photo.Hash)
-		return err
+		//DateTime:     toDateTime(photo.DateTime),
+		Iso: int32(photo.Iso),
+		//ExposureTime: toRational(photo.ExposureTime),
+		XDimension: int32(photo.XDimension),
+		YDimension: int32(photo.YDimension),
+		Model:      photo.Model,
+		//FocalLength:  toRational(photo.FocalLength),
 	}
-
-	return nil
 }

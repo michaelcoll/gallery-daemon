@@ -17,11 +17,14 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"github.com/fatih/color"
-	"github.com/michaelcoll/gallery-daemon/indexer"
-	"log"
+	"github.com/michaelcoll/gallery-daemon/db/connect"
+	"github.com/michaelcoll/gallery-daemon/db/migrations"
+	"github.com/michaelcoll/gallery-daemon/scanner"
+	"github.com/michaelcoll/gallery-daemon/server"
 )
 
 var path = flag.String("f", ".", "The folder where the photos are.")
@@ -32,8 +35,18 @@ func main() {
 
 	fmt.Printf("Monitoring folder %s \n", color.GreenString(*path))
 
-	err := indexer.Scan(*path)
-	if err != nil {
-		log.Fatal(err)
-	}
+	ctx := context.Background()
+	migrateDB(ctx)
+
+	scanner.New().Scan(ctx, *path)
+
+	server.Serve()
+
+}
+
+func migrateDB(ctx context.Context) {
+	c := connect.Connect(false)
+	defer c.Close()
+
+	migrations.New(c).Migrate(ctx)
 }

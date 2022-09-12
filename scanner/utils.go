@@ -14,30 +14,27 @@
  * limitations under the License.
  */
 
-package indexer
+package scanner
 
 import (
-	"github.com/cozy/goexif2/exif"
-	"github.com/michaelcoll/gallery-daemon/domain"
+	"crypto/sha256"
+	"encoding/hex"
+	"io"
 	"os"
 )
 
-// extractExif extracts the EXIF data of a photo
-func extractExif(photo *domain.Photo) error {
-	f, err := os.Open(photo.Path)
+// sha calculate the SHA256 of a file
+func sha(path string) (string, error) {
+	f, err := os.Open(path)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer f.Close()
 
-	x, err := exif.Decode(f)
-	if err != nil {
-		return err
-	} else {
-		err := x.Walk(photo)
-		if err != nil {
-			return err
-		}
-		return nil
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return "", err
 	}
+
+	return hex.EncodeToString(h.Sum(nil)), nil
 }

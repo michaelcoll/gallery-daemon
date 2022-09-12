@@ -9,6 +9,7 @@
 
 # build
 gallery-daemon
+*.pb.go
 
 # database
 photos.db

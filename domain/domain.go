@@ -17,8 +17,10 @@
 package domain
 
 import (
+	"fmt"
 	"github.com/cozy/goexif2/exif"
 	"github.com/cozy/goexif2/tiff"
+	"github.com/michaelcoll/gallery-daemon/db"
 	"math/big"
 	"time"
 )
@@ -34,11 +36,11 @@ type Photo struct {
 
 	DateTime     time.Time
 	Iso          int
-	ExposureTime *big.Rat
+	ExposureTime string
 	XDimension   int
 	YDimension   int
 	Model        string
-	FocalLength  *big.Rat
+	FocalLength  string
 }
 
 func (data *Photo) Walk(name exif.FieldName, tag *tiff.Tag) error {
@@ -49,7 +51,8 @@ func (data *Photo) Walk(name exif.FieldName, tag *tiff.Tag) error {
 	} else if name == "ISOSpeedRatings" {
 		data.Iso, _ = tag.Int(0)
 	} else if name == "ExposureTime" {
-		data.ExposureTime, _ = tag.Rat(0)
+		value, _ := tag.Rat(0)
+		data.ExposureTime = toString(value)
 	} else if name == "PixelXDimension" {
 		data.XDimension, _ = tag.Int(0)
 	} else if name == "PixelYDimension" {
@@ -57,7 +60,50 @@ func (data *Photo) Walk(name exif.FieldName, tag *tiff.Tag) error {
 	} else if name == "Model" {
 		data.Model, _ = tag.StringVal()
 	} else if name == "FocalLength" {
-		data.FocalLength, _ = tag.Rat(0)
+		value, _ := tag.Rat(0)
+		data.FocalLength = toString(value)
 	}
 	return nil
+}
+
+func toString(rat *big.Rat) string {
+	return fmt.Sprintf("%d/%d", rat.Num(), rat.Denom())
+}
+
+func (data *Photo) ToDBInsert() (*db.CreatePhotoParams, error) {
+	params := db.CreatePhotoParams{
+		Hash: data.Hash,
+		Path: data.Path,
+	}
+
+	err := params.DateTime.Scan(data.DateTime)
+	if err != nil {
+		return nil, err
+	}
+	err = params.Iso.Scan(data.Iso)
+	if err != nil {
+		return nil, err
+	}
+	err = params.ExposureTime.Scan(data.ExposureTime)
+	if err != nil {
+		return nil, err
+	}
+	err = params.XDimension.Scan(data.XDimension)
+	if err != nil {
+		return nil, err
+	}
+	err = params.YDimension.Scan(data.YDimension)
+	if err != nil {
+		return nil, err
+	}
+	err = params.Model.Scan(data.Model)
+	if err != nil {
+		return nil, err
+	}
+	err = params.FocalLength.Scan(data.FocalLength)
+	if err != nil {
+		return nil, err
+	}
+
+	return &params, nil
 }

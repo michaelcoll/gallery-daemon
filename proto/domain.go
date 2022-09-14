@@ -17,10 +17,10 @@
 package gallery
 
 import (
-	"github.com/michaelcoll/gallery-daemon/domain"
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 )
 
-func (x *Photo) New(photo *domain.Photo) *Photo {
+func (x *Photo) New(photo *model.Photo) *Photo {
 	return &Photo{
 		Hash: photo.Hash,
 		Path: photo.Path,

@@ -1,3 +1,6 @@
+build:
+	go build -v ./...
+
 gen: sqlc protoc
 
 protoc:
@@ -12,9 +15,6 @@ clean:
 
 run:
 	go run . -f ~/Images/Photos
-
-build:
-	go build -v ./...
 
 sqlc:
 	sqlc generate

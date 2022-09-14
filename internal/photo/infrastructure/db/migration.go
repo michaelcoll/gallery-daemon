@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package migrations
+package db
 
 import (
-	"context"
 	"database/sql"
 	"log"
 )
@@ -55,7 +54,7 @@ CREATE TABLE photos
     x_dimension   INTEGER,
     y_dimension   INTEGER,
     model         TEXT,
-    focal_length  TEXT
+    aperture      REAL
 );
 `
 
@@ -64,8 +63,8 @@ var migrations = map[int]string{
 }
 
 type DB interface {
-	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
-	PrepareContext(context.Context, string) (*sql.Stmt, error)
+	Exec(string, ...interface{}) (sql.Result, error)
+	Prepare(string) (*sql.Stmt, error)
 }
 
 // New creates a new instance of Migrations struct
@@ -78,26 +77,26 @@ type Migrations struct {
 }
 
 // Migrate migrates the database using the migration scripts provided
-func (m *Migrations) Migrate(ctx context.Context) {
-	initialized, err := m.isInitialized(ctx)
+func (m *Migrations) Migrate() {
+	initialized, err := m.isInitialized()
 	if err != nil {
 		log.Fatalf("Can't detect if database is initialized %v", err)
 	}
 	if initialized {
-		version, err := m.getVersion(ctx)
+		version, err := m.getVersion()
 		if err != nil {
 			log.Fatalf("Can't read database version %v", err)
 		}
-		m.applyMigration(ctx, version)
+		m.applyMigration(version)
 	} else {
-		m.createDBVersionTable(ctx)
-		m.applyMigration(ctx, 0)
+		m.createDBVersionTable()
+		m.applyMigration(0)
 	}
 }
 
 // isInitialized checks if the table db_version is present in the current database
-func (m *Migrations) isInitialized(ctx context.Context) (bool, error) {
-	stmt, err := m.db.PrepareContext(ctx, testVersionTableExists)
+func (m *Migrations) isInitialized() (bool, error) {
+	stmt, err := m.db.Prepare(testVersionTableExists)
 	if err != nil {
 		return false, err
 	}
@@ -113,8 +112,8 @@ func (m *Migrations) isInitialized(ctx context.Context) (bool, error) {
 }
 
 // getVersion returns the current version of the schema
-func (m *Migrations) getVersion(ctx context.Context) (int, error) {
-	stmt, err := m.db.PrepareContext(ctx, selectVersionStmt)
+func (m *Migrations) getVersion() (int, error) {
+	stmt, err := m.db.Prepare(selectVersionStmt)
 	if err != nil {
 		return 0, err
 	}
@@ -130,16 +129,16 @@ func (m *Migrations) getVersion(ctx context.Context) (int, error) {
 }
 
 // applyMigration a migration
-func (m *Migrations) createDBVersionTable(ctx context.Context) {
-	_, err := m.db.ExecContext(ctx, initSql)
+func (m *Migrations) createDBVersionTable() {
+	_, err := m.db.Exec(initSql)
 	if err != nil {
 		log.Fatalf("Could not create db_version table %v", err)
 	}
 }
 
 // applyMigration a migration
-func (m *Migrations) applyMigration(ctx context.Context, fromVersion int) {
-	updStmt, err := m.db.PrepareContext(ctx, updateVersionStmt)
+func (m *Migrations) applyMigration(fromVersion int) {
+	updStmt, err := m.db.Prepare(updateVersionStmt)
 	if err != nil {
 		log.Fatalf("Could not prepare Stmt : %v", err)
 	}
@@ -147,12 +146,12 @@ func (m *Migrations) applyMigration(ctx context.Context, fromVersion int) {
 
 	for version, script := range migrations {
 		if version > fromVersion {
-			_, err := m.db.ExecContext(ctx, script)
+			_, err := m.db.Exec(script)
 			if err != nil {
 				log.Fatalf("Could not apply migration : %s, %v", script, err)
 			}
 
-			_, err = updStmt.ExecContext(ctx, version)
+			_, err = updStmt.Exec(version)
 			if err != nil {
 				log.Fatalf("Could not update version : %v", err)
 			}

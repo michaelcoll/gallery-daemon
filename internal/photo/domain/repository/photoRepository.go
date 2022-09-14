@@ -14,28 +14,19 @@
  * limitations under the License.
  */
 
-package main
+package repository
 
 import (
 	"context"
-	"flag"
-	"fmt"
-	"github.com/fatih/color"
-
-	"github.com/michaelcoll/gallery-daemon/internal/photo"
-	"github.com/michaelcoll/gallery-daemon/server"
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 )
 
-var path = flag.String("f", ".", "The folder where the photos are.")
+type PhotoRepository interface {
+	Connect(readOnly bool)
+	Close()
 
-func main() {
-
-	flag.Parse()
-
-	fmt.Printf("Monitoring folder %s \n", color.GreenString(*path))
-
-	photo.New().GetService().Scan(context.Background(), *path)
-
-	server.Serve()
-
+	Create(context.Context, model.Photo) error
+	Get(ctx context.Context, hash string) (model.Photo, error)
+	Exists(ctx context.Context, hash string) bool
+	List(context.Context) ([]model.Photo, error)
 }

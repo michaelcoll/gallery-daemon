@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.15.0
 
-package db
+package sqlc
 
 import (
 	"context"
@@ -16,16 +16,9 @@ type DBTX interface {
 	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
 }
 
-func New(db DBTX) *Queries {
-	return &Queries{db: db}
+func New() *Queries {
+	return &Queries{}
 }
 
 type Queries struct {
-	db DBTX
-}
-
-func (q *Queries) WithTx(tx *sql.Tx) *Queries {
-	return &Queries{
-		db: tx,
-	}
 }

@@ -160,8 +160,9 @@ func (w *walker) Walk(name exif.FieldName, tag *tiff.Tag) error {
 	} else if name == "ISOSpeedRatings" {
 		w.p.Iso, _ = tag.Int(0)
 	} else if name == "ExposureTime" {
-		value, _ := tag.Rat(0)
-		w.p.ExposureTime = toString(value)
+		if value, err := tag.Rat(0); err == nil {
+			w.p.ExposureTime = toString(value)
+		}
 	} else if name == "PixelXDimension" {
 		w.p.XDimension, _ = tag.Int(0)
 	} else if name == "PixelYDimension" {
@@ -169,8 +170,9 @@ func (w *walker) Walk(name exif.FieldName, tag *tiff.Tag) error {
 	} else if name == "Model" {
 		w.p.Model, _ = tag.StringVal()
 	} else if name == "MaxApertureValue" {
-		value, _ := tag.Rat(0)
-		w.p.Aperture, _ = value.Float32()
+		if value, err := tag.Rat(0); err == nil {
+			w.p.Aperture, _ = value.Float32()
+		}
 	}
 	return nil
 }

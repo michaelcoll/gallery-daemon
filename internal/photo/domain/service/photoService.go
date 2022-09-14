@@ -14,30 +14,14 @@
  * limitations under the License.
  */
 
-package scanner
+package service
 
-import (
-	"github.com/cozy/goexif2/exif"
-	"github.com/michaelcoll/gallery-daemon/domain"
-	"os"
-)
+import "github.com/michaelcoll/gallery-daemon/internal/photo/domain/repository"
 
-// extractExif extracts the EXIF data of a photo
-func extractExif(photo *domain.Photo) error {
-	f, err := os.Open(photo.Path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
+type PhotoService struct {
+	r repository.PhotoRepository
+}
 
-	x, err := exif.Decode(f)
-	if err != nil {
-		return err
-	} else {
-		err := x.Walk(photo)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
+func New(r repository.PhotoRepository) PhotoService {
+	return PhotoService{r: r}
 }

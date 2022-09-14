@@ -34,6 +34,6 @@ message Photo {
   int32 XDimension = 6;
   int32 YDimension = 7;
   string Model = 8;
-  string FocalLength = 9;
+  float Aperture = 9;
 
 }

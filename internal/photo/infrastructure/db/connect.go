@@ -14,28 +14,28 @@
  * limitations under the License.
  */
 
-package main
+package db
 
 import (
-	"context"
-	"flag"
-	"fmt"
-	"github.com/fatih/color"
+	"database/sql"
+	"log"
 
-	"github.com/michaelcoll/gallery-daemon/internal/photo"
-	"github.com/michaelcoll/gallery-daemon/server"
+	_ "github.com/mattn/go-sqlite3"
 )
 
-var path = flag.String("f", ".", "The folder where the photos are.")
+func Connect(readOnly bool) *sql.DB {
+	db, err := sql.Open("sqlite3", getDBUrl(readOnly))
+	if err != nil {
+		log.Fatalf("Can't open database %v", err)
+	}
 
-func main() {
+	return db
+}
 
-	flag.Parse()
-
-	fmt.Printf("Monitoring folder %s \n", color.GreenString(*path))
-
-	photo.New().GetService().Scan(context.Background(), *path)
-
-	server.Serve()
-
+func getDBUrl(readOnly bool) string {
+	if readOnly {
+		return "file:./photos.db?cache=shared&mode=ro"
+	} else {
+		return "file:./photos.db?cache=shared&mode=rwc&_auto_vacuum=full"
+	}
 }

@@ -14,27 +14,22 @@
  * limitations under the License.
  */
 
-package scanner
+package model
 
-import (
-	"crypto/sha256"
-	"encoding/hex"
-	"io"
-	"os"
-)
+type Photo struct {
 
-// sha calculate the SHA256 of a file
-func sha(path string) (string, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
+	// Main
 
-	h := sha256.New()
-	if _, err := io.Copy(h, f); err != nil {
-		return "", err
-	}
+	Hash string
+	Path string
 
-	return hex.EncodeToString(h.Sum(nil)), nil
+	// EXIF
+
+	DateTime     string
+	Iso          int
+	ExposureTime string
+	XDimension   int
+	YDimension   int
+	Model        string
+	Aperture     float32
 }

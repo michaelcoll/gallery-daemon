@@ -14,28 +14,21 @@
  * limitations under the License.
  */
 
-package connect
+package photo
 
 import (
-	"database/sql"
-	"log"
-
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/service"
+	"github.com/michaelcoll/gallery-daemon/internal/photo/infrastructure/infra_repository"
 )
 
-func Connect(readOnly bool) *sql.DB {
-	db, err := sql.Open("sqlite3", getDBUrl(readOnly))
-	if err != nil {
-		log.Fatalf("Can't open database %v", err)
-	}
-
-	return db
+type Module struct {
+	s service.PhotoService
 }
 
-func getDBUrl(readOnly bool) string {
-	if readOnly {
-		return "file:./photos.db?cache=shared&mode=ro"
-	} else {
-		return "file:./photos.db?cache=shared&mode=rwc&_auto_vacuum=full"
-	}
+func (m Module) GetService() *service.PhotoService {
+	return &m.s
+}
+
+func New() Module {
+	return Module{s: service.New(infra_repository.New())}
 }

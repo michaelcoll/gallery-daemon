@@ -1,5 +1,5 @@
 build:
-	go build -v ./...
+	go build -v .
 
 gen: sqlc protoc
 

@@ -24,20 +24,20 @@ func (q *Queries) CountPhotoByHash(ctx context.Context, db DBTX, hash string) (i
 }
 
 const createPhoto = `-- name: CreatePhoto :exec
-INSERT INTO photos (hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, aperture)
+INSERT INTO photos (hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, f_number)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type CreatePhotoParams struct {
-	Hash         string          `db:"hash"`
-	Path         string          `db:"path"`
-	DateTime     sql.NullString  `db:"date_time"`
-	Iso          sql.NullInt32   `db:"iso"`
-	ExposureTime sql.NullString  `db:"exposure_time"`
-	XDimension   sql.NullInt32   `db:"x_dimension"`
-	YDimension   sql.NullInt32   `db:"y_dimension"`
-	Model        sql.NullString  `db:"model"`
-	Aperture     sql.NullFloat64 `db:"aperture"`
+	Hash         string         `db:"hash"`
+	Path         string         `db:"path"`
+	DateTime     sql.NullString `db:"date_time"`
+	Iso          sql.NullInt32  `db:"iso"`
+	ExposureTime sql.NullString `db:"exposure_time"`
+	XDimension   sql.NullInt32  `db:"x_dimension"`
+	YDimension   sql.NullInt32  `db:"y_dimension"`
+	Model        sql.NullString `db:"model"`
+	FNumber      sql.NullString `db:"f_number"`
 }
 
 func (q *Queries) CreatePhoto(ctx context.Context, db DBTX, arg CreatePhotoParams) error {
@@ -50,13 +50,13 @@ func (q *Queries) CreatePhoto(ctx context.Context, db DBTX, arg CreatePhotoParam
 		arg.XDimension,
 		arg.YDimension,
 		arg.Model,
-		arg.Aperture,
+		arg.FNumber,
 	)
 	return err
 }
 
 const getPhoto = `-- name: GetPhoto :one
-SELECT hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, aperture
+SELECT hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, f_number
 FROM photos
 WHERE hash = ?
 `
@@ -73,13 +73,13 @@ func (q *Queries) GetPhoto(ctx context.Context, db DBTX, hash string) (Photo, er
 		&i.XDimension,
 		&i.YDimension,
 		&i.Model,
-		&i.Aperture,
+		&i.FNumber,
 	)
 	return i, err
 }
 
 const list = `-- name: List :many
-SELECT hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, aperture
+SELECT hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, f_number
 FROM photos
 `
 
@@ -101,7 +101,7 @@ func (q *Queries) List(ctx context.Context, db DBTX) ([]Photo, error) {
 			&i.XDimension,
 			&i.YDimension,
 			&i.Model,
-			&i.Aperture,
+			&i.FNumber,
 		); err != nil {
 			return nil, err
 		}

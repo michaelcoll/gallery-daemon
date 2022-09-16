@@ -31,5 +31,5 @@ type Photo struct {
 	XDimension   int
 	YDimension   int
 	Model        string
-	Aperture     float32
+	FNumber      string
 }

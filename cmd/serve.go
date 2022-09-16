@@ -14,12 +14,31 @@
  * limitations under the License.
  */
 
-package main
+package cmd
 
 import (
-	"github.com/michaelcoll/gallery-daemon/cmd"
+	"context"
+	"fmt"
+	"github.com/fatih/color"
+	"github.com/michaelcoll/gallery-daemon/internal/photo"
+	"github.com/michaelcoll/gallery-daemon/server"
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	cmd.Execute()
+// serveCmd represents the serve command
+var serveCmd = &cobra.Command{
+	Use:   "serve",
+	Short: "Starts the server",
+	Long:  ``,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("Monitoring folder %s \n", color.GreenString(folder))
+
+		photo.New().GetService().Scan(context.Background(), folder)
+
+		server.Serve()
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(serveCmd)
 }

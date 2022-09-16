@@ -29,6 +29,7 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -38,6 +39,8 @@ import (
 
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 )
+
+var supportedExtensions = []string{".jpg", ".jpeg", ".JPG", ".JPEG"}
 
 type PhotoService struct {
 	r repository.PhotoRepository
@@ -57,7 +60,7 @@ func (s *PhotoService) Scan(ctx context.Context, path string) {
 
 	bar := progressbar.Default(-1, fmt.Sprintf("Finding all images in folder %s ... ", path))
 	go func() {
-		s.getImageFiles(path, imagesToInsert)
+		getImageFiles(path, imagesToInsert)
 		close(imagesToInsert)
 	}()
 
@@ -73,7 +76,7 @@ func (s *PhotoService) Scan(ctx context.Context, path string) {
 	_ = bar.Clear()
 }
 
-func (s *PhotoService) getImageFiles(path string, imagesToInsert chan *model.Photo) {
+func getImageFiles(path string, imagesToInsert chan *model.Photo) {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		log.Fatalf("Can't open folder : %s (%v)\n", path, err)
@@ -82,8 +85,9 @@ func (s *PhotoService) getImageFiles(path string, imagesToInsert chan *model.Pho
 	for _, file := range files {
 		imagePath := filepath.Join(path, file.Name())
 		if file.IsDir() {
-			s.getImageFiles(imagePath, imagesToInsert)
-		} else if strings.HasSuffix(file.Name(), ".jpg") || strings.HasSuffix(file.Name(), ".jpeg") || strings.HasSuffix(file.Name(), ".JPG") || strings.HasSuffix(file.Name(), ".JPEG") {
+			getImageFiles(imagePath, imagesToInsert)
+		} else if hasSupportedExtension(file.Name()) {
+
 			photo := &model.Photo{Path: imagePath}
 
 			extractData(photo)
@@ -92,19 +96,27 @@ func (s *PhotoService) getImageFiles(path string, imagesToInsert chan *model.Pho
 	}
 }
 
+func hasSupportedExtension(filename string) bool {
+	for _, ext := range supportedExtensions {
+		if strings.HasSuffix(filename, ext) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func extractData(photo *model.Photo) {
 	hash, err := sha(photo.Path)
 	if err != nil {
-		//log.Printf("Can't calculate hash for file : %s (%v)", photo.Path, err)
-		panic(err)
+		log.Printf("Can't calculate hash for file : %s : %v\n", photo.Path, err)
 	}
 
 	photo.Hash = hash
 
 	err = extractExif(photo)
 	if err != nil {
-		//log.Printf("Error while extracting EXIF from file %s : %v\n", photo.Path, err)
-		panic(err)
+		log.Printf("Error while extracting EXIF from file %s : %v\n", photo.Path, err)
 	}
 }
 
@@ -135,7 +147,7 @@ func extractExif(photo *model.Photo) error {
 
 	x, err := exif.Decode(f)
 	if err != nil && !errors.Is(err, io.EOF) {
-		fmt.Printf("Error decoding file : %s (%v)\n", photo.Path, err)
+		fmt.Printf("Error reading EXIF data in file : %s (%v)\n", photo.Path, err)
 	} else if err == nil {
 		err := x.Walk(&walker{p: photo})
 		if err != nil {
@@ -167,10 +179,12 @@ func (w *walker) Walk(name exif.FieldName, tag *tiff.Tag) error {
 	} else if name == "PixelYDimension" {
 		w.p.YDimension, _ = tag.Int(0)
 	} else if name == "Model" {
-		w.p.Model, _ = tag.StringVal()
-	} else if name == "MaxApertureValue" {
-		if value, err := tag.Rat(0); err == nil {
-			w.p.Aperture, _ = value.Float32()
+		value, _ := tag.StringVal()
+		w.p.Model = strings.Trim(value, " ")
+	} else if name == "FNumber" {
+		if ratValue, err := tag.Rat(0); err == nil {
+			floatValue, _ := ratValue.Float32()
+			w.p.FNumber = fmt.Sprintf("f/%s", strconv.FormatFloat(float64(floatValue), 'f', -1, 32))
 		}
 	}
 	return nil

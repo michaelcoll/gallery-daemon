@@ -47,7 +47,7 @@ func (r *PhotoDBRepository) toInfra(photo model.Photo) (sqlc.CreatePhotoParams, 
 	if err := params.Model.Scan(photo.Model); err != nil {
 		return sqlc.CreatePhotoParams{}, err
 	}
-	if err := params.Aperture.Scan(photo.Aperture); err != nil {
+	if err := params.FNumber.Scan(photo.FNumber); err != nil {
 		return sqlc.CreatePhotoParams{}, err
 	}
 
@@ -79,8 +79,8 @@ func (r *PhotoDBRepository) toDomain(photo sqlc.Photo) (model.Photo, error) {
 	if photo.Model.Valid {
 		m.Model = photo.Model.String
 	}
-	if photo.Aperture.Valid {
-		m.Aperture = float32(photo.Aperture.Float64)
+	if photo.FNumber.Valid {
+		m.FNumber = photo.FNumber.String
 	}
 
 	return *m, nil

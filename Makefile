@@ -14,7 +14,7 @@ clean:
 	rm proto/*.pb.go
 
 run:
-	go run . -f ~/Images/Photos
+	go run . index -f ~/Images/Photos
 
 sqlc:
 	sqlc generate

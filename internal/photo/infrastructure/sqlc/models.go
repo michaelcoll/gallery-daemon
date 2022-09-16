@@ -9,13 +9,13 @@ import (
 )
 
 type Photo struct {
-	Hash         string          `db:"hash"`
-	Path         string          `db:"path"`
-	DateTime     sql.NullString  `db:"date_time"`
-	Iso          sql.NullInt32   `db:"iso"`
-	ExposureTime sql.NullString  `db:"exposure_time"`
-	XDimension   sql.NullInt32   `db:"x_dimension"`
-	YDimension   sql.NullInt32   `db:"y_dimension"`
-	Model        sql.NullString  `db:"model"`
-	Aperture     sql.NullFloat64 `db:"aperture"`
+	Hash         string         `db:"hash"`
+	Path         string         `db:"path"`
+	DateTime     sql.NullString `db:"date_time"`
+	Iso          sql.NullInt32  `db:"iso"`
+	ExposureTime sql.NullString `db:"exposure_time"`
+	XDimension   sql.NullInt32  `db:"x_dimension"`
+	YDimension   sql.NullInt32  `db:"y_dimension"`
+	Model        sql.NullString `db:"model"`
+	FNumber      sql.NullString `db:"f_number"`
 }

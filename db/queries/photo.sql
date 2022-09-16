@@ -4,7 +4,7 @@ FROM photos
 WHERE hash = ?;
 
 -- name: CreatePhoto :exec
-INSERT INTO photos (hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, aperture)
+INSERT INTO photos (hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, f_number)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- name: CountPhotoByHash :one

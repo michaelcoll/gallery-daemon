@@ -8,5 +8,5 @@ CREATE TABLE photos
     x_dimension   INTEGER,
     y_dimension   INTEGER,
     model         TEXT,
-    aperture      REAL
+    f_number      TEXT
 );

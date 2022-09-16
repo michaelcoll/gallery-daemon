@@ -22,6 +22,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/repository"
 	"io"
 	"io/ioutil"
 	"log"
@@ -38,10 +39,19 @@ import (
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 )
 
+type PhotoService struct {
+	r repository.PhotoRepository
+}
+
+func New(r repository.PhotoRepository) PhotoService {
+	return PhotoService{r: r}
+}
+
 // Scan scans the folder given in parameter and fill the database with image info and EXIF data found on JPEGs
 func (s *PhotoService) Scan(ctx context.Context, path string) {
 
 	s.r.Connect(false)
+	defer s.r.Close()
 
 	imagesToInsert := make(chan *model.Photo)
 
@@ -57,13 +67,10 @@ func (s *PhotoService) Scan(ctx context.Context, path string) {
 			if err != nil {
 				log.Fatalf("Can't insert photo into database (%v)", err)
 			}
-			_ = bar.Add(1)
 		}
+		_ = bar.Add(1)
 	}
-
 	_ = bar.Clear()
-
-	s.r.Close()
 }
 
 func (s *PhotoService) getImageFiles(path string, imagesToInsert chan *model.Photo) {

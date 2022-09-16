@@ -30,8 +30,10 @@ func (r *PhotoDBRepository) toInfra(photo model.Photo) (sqlc.CreatePhotoParams, 
 	if err := params.DateTime.Scan(photo.DateTime); err != nil {
 		return sqlc.CreatePhotoParams{}, err
 	}
-	if err := params.Iso.Scan(photo.Iso); err != nil {
-		return sqlc.CreatePhotoParams{}, err
+	if photo.Iso != 0 {
+		if err := params.Iso.Scan(photo.Iso); err != nil {
+			return sqlc.CreatePhotoParams{}, err
+		}
 	}
 	if err := params.ExposureTime.Scan(photo.ExposureTime); err != nil {
 		return sqlc.CreatePhotoParams{}, err

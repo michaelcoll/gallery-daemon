@@ -22,7 +22,9 @@ import (
 )
 
 type PhotoRepository interface {
+	// Connect Opens a database connection
 	Connect(readOnly bool)
+	// Close Closes the database connection
 	Close()
 
 	Create(context.Context, model.Photo) error

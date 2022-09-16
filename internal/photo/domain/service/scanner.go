@@ -20,10 +20,8 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
-	"github.com/cozy/goexif2/exif"
-	"github.com/cozy/goexif2/tiff"
-	"github.com/schollz/progressbar/v3"
 	"io"
 	"io/ioutil"
 	"log"
@@ -31,7 +29,11 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
+	"time"
+
+	"github.com/cozy/goexif2/exif"
+	"github.com/cozy/goexif2/tiff"
+	"github.com/schollz/progressbar/v3"
 
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 )
@@ -40,85 +42,71 @@ import (
 func (s *PhotoService) Scan(ctx context.Context, path string) {
 
 	s.r.Connect(false)
-	defer s.r.Close()
+
+	imagesToInsert := make(chan *model.Photo)
 
 	bar := progressbar.Default(-1, fmt.Sprintf("Finding all images in folder %s ... ", path))
-	var wg sync.WaitGroup
-	images := getImageFiles(path, &wg, bar)
-	wg.Wait()
-	_ = bar.Clear()
+	go func() {
+		s.getImageFiles(path, imagesToInsert)
+		close(imagesToInsert)
+	}()
 
-	bar = progressbar.Default(-1, "Syncing database ... ")
-	var imagesToInsert []*model.Photo
-	for _, scannedImage := range images {
-		_ = bar.Add(1)
-		if !s.r.Exists(ctx, scannedImage.Hash) {
-			imagesToInsert = append(imagesToInsert, scannedImage)
-		}
-	}
-	_ = bar.Clear()
-
-	if len(imagesToInsert) > 0 {
-		bar := progressbar.Default(int64(len(imagesToInsert)), "Updating database ...")
-		for _, photo := range imagesToInsert {
+	for photo := range imagesToInsert {
+		if !s.r.Exists(ctx, photo.Hash) {
 			err := s.r.Create(ctx, *photo)
 			if err != nil {
 				log.Fatalf("Can't insert photo into database (%v)", err)
 			}
 			_ = bar.Add(1)
 		}
-		_ = bar.Clear()
 	}
 
+	_ = bar.Clear()
+
+	s.r.Close()
 }
 
-func getImageFiles(path string, wg *sync.WaitGroup, bar *progressbar.ProgressBar) []*model.Photo {
-	var images []*model.Photo
-
+func (s *PhotoService) getImageFiles(path string, imagesToInsert chan *model.Photo) {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Can't open folder : %s (%v)\n", path, err)
 	}
 
 	for _, file := range files {
+		imagePath := filepath.Join(path, file.Name())
 		if file.IsDir() {
-			for _, image := range getImageFiles(filepath.Join(path, file.Name()), wg, bar) {
-				images = append(images, image)
-			}
+			s.getImageFiles(imagePath, imagesToInsert)
 		} else if strings.HasSuffix(file.Name(), ".jpg") || strings.HasSuffix(file.Name(), ".jpeg") || strings.HasSuffix(file.Name(), ".JPG") || strings.HasSuffix(file.Name(), ".JPEG") {
-			imagePath := filepath.Join(path, file.Name())
 			photo := &model.Photo{Path: imagePath}
 
-			wg.Add(1)
-			go func() {
-				extractData(photo)
-				_ = bar.Add(1)
-				wg.Done()
-			}()
-
-			images = append(images, photo)
+			extractData(photo)
+			imagesToInsert <- photo
 		}
 	}
-
-	return images
 }
 
 func extractData(photo *model.Photo) {
 	hash, err := sha(photo.Path)
 	if err != nil {
-		log.Printf("\nCan't calculate hash for file : %s", photo.Path)
+		//log.Printf("Can't calculate hash for file : %s (%v)", photo.Path, err)
+		panic(err)
 	}
 
 	photo.Hash = hash
 
-	_ = extractExif(photo)
+	err = extractExif(photo)
+	if err != nil {
+		//log.Printf("Error while extracting EXIF from file %s : %v\n", photo.Path, err)
+		panic(err)
+	}
 }
 
 // sha calculate the SHA256 of a file
 func sha(path string) (string, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return "", err
+		//log.Fatalf("SHA Can't open file : %s (%v)\n", path, err)
+		panic(err)
 	}
 	defer f.Close()
 
@@ -134,20 +122,21 @@ func sha(path string) (string, error) {
 func extractExif(photo *model.Photo) error {
 	f, err := os.Open(photo.Path)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	defer f.Close()
 
 	x, err := exif.Decode(f)
-	if err != nil {
-		return err
-	} else {
+	if err != nil && !errors.Is(err, io.EOF) {
+		fmt.Printf("Error decoding file : %s (%v)\n", photo.Path, err)
+	} else if err == nil {
 		err := x.Walk(&walker{p: photo})
 		if err != nil {
-			return err
+			panic(err)
 		}
-		return nil
 	}
+
+	return nil
 }
 
 type walker struct {
@@ -156,7 +145,10 @@ type walker struct {
 
 func (w *walker) Walk(name exif.FieldName, tag *tiff.Tag) error {
 	if name == "DateTime" {
-		w.p.DateTime, _ = tag.StringVal()
+		dateTimeStr, _ := tag.StringVal()
+		date, _ := time.Parse("2006:01:02 15:04:05", dateTimeStr)
+
+		w.p.DateTime = date.Format("2006-01-02T15:04:05")
 	} else if name == "ISOSpeedRatings" {
 		w.p.Iso, _ = tag.Int(0)
 	} else if name == "ExposureTime" {

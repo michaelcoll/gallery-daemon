@@ -48,13 +48,13 @@ func (r *PhotoDBRepository) Close() {
 	r.c.Close()
 }
 
-func (r *PhotoDBRepository) Create(ctx context.Context, photo model.Photo) error {
+func (r *PhotoDBRepository) CreateOrReplace(ctx context.Context, photo model.Photo) error {
 	params, err := r.toInfra(photo)
 	if err != nil {
 		return err
 	}
 
-	if err := r.q.CreatePhoto(ctx, r.c, params); err != nil {
+	if err := r.q.CreateOrReplacePhoto(ctx, r.c, params); err != nil {
 		return err
 	}
 

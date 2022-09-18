@@ -21,34 +21,34 @@ import (
 	"github.com/michaelcoll/gallery-daemon/internal/photo/infrastructure/sqlc"
 )
 
-func (r *PhotoDBRepository) toInfra(photo model.Photo) (sqlc.CreatePhotoParams, error) {
-	params := sqlc.CreatePhotoParams{
+func (r *PhotoDBRepository) toInfra(photo model.Photo) (sqlc.CreateOrReplacePhotoParams, error) {
+	params := sqlc.CreateOrReplacePhotoParams{
 		Hash: photo.Hash,
 		Path: photo.Path,
 	}
 
 	if err := params.DateTime.Scan(photo.DateTime); err != nil {
-		return sqlc.CreatePhotoParams{}, err
+		return sqlc.CreateOrReplacePhotoParams{}, err
 	}
 	if photo.Iso != 0 {
 		if err := params.Iso.Scan(photo.Iso); err != nil {
-			return sqlc.CreatePhotoParams{}, err
+			return sqlc.CreateOrReplacePhotoParams{}, err
 		}
 	}
 	if err := params.ExposureTime.Scan(photo.ExposureTime); err != nil {
-		return sqlc.CreatePhotoParams{}, err
+		return sqlc.CreateOrReplacePhotoParams{}, err
 	}
 	if err := params.XDimension.Scan(photo.XDimension); err != nil {
-		return sqlc.CreatePhotoParams{}, err
+		return sqlc.CreateOrReplacePhotoParams{}, err
 	}
 	if err := params.YDimension.Scan(photo.YDimension); err != nil {
-		return sqlc.CreatePhotoParams{}, err
+		return sqlc.CreateOrReplacePhotoParams{}, err
 	}
 	if err := params.Model.Scan(photo.Model); err != nil {
-		return sqlc.CreatePhotoParams{}, err
+		return sqlc.CreateOrReplacePhotoParams{}, err
 	}
 	if err := params.FNumber.Scan(photo.FNumber); err != nil {
-		return sqlc.CreatePhotoParams{}, err
+		return sqlc.CreateOrReplacePhotoParams{}, err
 	}
 
 	return params, nil
@@ -65,16 +65,16 @@ func (r *PhotoDBRepository) toDomain(photo sqlc.Photo) (model.Photo, error) {
 		m.DateTime = photo.DateTime.String
 	}
 	if photo.Iso.Valid {
-		m.Iso = int(photo.Iso.Int32)
+		m.Iso = int(photo.Iso.Int64)
 	}
 	if photo.ExposureTime.Valid {
 		m.ExposureTime = photo.ExposureTime.String
 	}
 	if photo.XDimension.Valid {
-		m.XDimension = int(photo.XDimension.Int32)
+		m.XDimension = int(photo.XDimension.Int64)
 	}
 	if photo.YDimension.Valid {
-		m.YDimension = int(photo.YDimension.Int32)
+		m.YDimension = int(photo.YDimension.Int64)
 	}
 	if photo.Model.Valid {
 		m.Model = photo.Model.String

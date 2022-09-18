@@ -27,7 +27,7 @@ type PhotoRepository interface {
 	// Close Closes the database connection
 	Close()
 
-	Create(context.Context, model.Photo) error
+	CreateOrReplace(context.Context, model.Photo) error
 	Get(ctx context.Context, hash string) (model.Photo, error)
 	Exists(ctx context.Context, hash string) bool
 	List(context.Context) ([]model.Photo, error)

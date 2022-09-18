@@ -17,12 +17,9 @@
 package cmd
 
 import (
-	"context"
-	"fmt"
-	"github.com/fatih/color"
-	"github.com/michaelcoll/gallery-daemon/internal/photo"
-	"github.com/michaelcoll/gallery-daemon/server"
 	"github.com/spf13/cobra"
+
+	"github.com/michaelcoll/gallery-daemon/internal/photo"
 )
 
 // serveCmd represents the serve command
@@ -31,11 +28,7 @@ var serveCmd = &cobra.Command{
 	Short: "Starts the server",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Monitoring folder %s \n", color.GreenString(folder))
-
-		photo.New().GetService().Scan(context.Background(), folder)
-
-		server.Serve()
+		photo.New().GetController().Serve()
 	},
 }
 

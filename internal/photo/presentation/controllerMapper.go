@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-package gallery
+package presentation
 
 import (
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
+
+	grpc "github.com/michaelcoll/gallery-daemon/proto"
 )
 
-func (x *Photo) New(photo *model.Photo) *Photo {
-	return &Photo{
+func toGrpc(photo model.Photo) *grpc.Photo {
+	return &grpc.Photo{
 		Hash: photo.Hash,
 		Path: photo.Path,
 
-		//DateTime:     toDateTime(photo.DateTime),
-		Iso: int32(photo.Iso),
-		//ExposureTime: toRational(photo.ExposureTime),
-		XDimension: int32(photo.XDimension),
-		YDimension: int32(photo.YDimension),
-		Model:      photo.Model,
-		//FocalLength:  toRational(photo.FocalLength),
+		DateTime:     photo.DateTime,
+		Iso:          int32(photo.Iso),
+		ExposureTime: photo.ExposureTime,
+		XDimension:   int32(photo.XDimension),
+		YDimension:   int32(photo.YDimension),
+		Model:        photo.Model,
+		FNumber:      photo.FNumber,
 	}
 }

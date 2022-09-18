@@ -4,7 +4,7 @@
 // - protoc             v3.19.4
 // source: proto/gallery.proto
 
-package gallery
+package grpc
 
 import (
 	context "context"
@@ -23,7 +23,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GalleryClient interface {
 	// get all photos
-	GetPhotos(ctx context.Context, in *PhotoFilter, opts ...grpc.CallOption) (Gallery_GetPhotosClient, error)
+	GetPhotos(ctx context.Context, in *ListFilter, opts ...grpc.CallOption) (*PhotosResponse, error)
+	GetByHash(ctx context.Context, in *HashFilter, opts ...grpc.CallOption) (*Photo, error)
 }
 
 type galleryClient struct {
@@ -34,36 +35,22 @@ func NewGalleryClient(cc grpc.ClientConnInterface) GalleryClient {
 	return &galleryClient{cc}
 }
 
-func (c *galleryClient) GetPhotos(ctx context.Context, in *PhotoFilter, opts ...grpc.CallOption) (Gallery_GetPhotosClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Gallery_ServiceDesc.Streams[0], "/gallery.Gallery/GetPhotos", opts...)
+func (c *galleryClient) GetPhotos(ctx context.Context, in *ListFilter, opts ...grpc.CallOption) (*PhotosResponse, error) {
+	out := new(PhotosResponse)
+	err := c.cc.Invoke(ctx, "/photo.Gallery/GetPhotos", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &galleryGetPhotosClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
 
-type Gallery_GetPhotosClient interface {
-	Recv() (*Photo, error)
-	grpc.ClientStream
-}
-
-type galleryGetPhotosClient struct {
-	grpc.ClientStream
-}
-
-func (x *galleryGetPhotosClient) Recv() (*Photo, error) {
-	m := new(Photo)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+func (c *galleryClient) GetByHash(ctx context.Context, in *HashFilter, opts ...grpc.CallOption) (*Photo, error) {
+	out := new(Photo)
+	err := c.cc.Invoke(ctx, "/photo.Gallery/GetByHash", in, out, opts...)
+	if err != nil {
 		return nil, err
 	}
-	return m, nil
+	return out, nil
 }
 
 // GalleryServer is the server API for Gallery service.
@@ -71,7 +58,8 @@ func (x *galleryGetPhotosClient) Recv() (*Photo, error) {
 // for forward compatibility
 type GalleryServer interface {
 	// get all photos
-	GetPhotos(*PhotoFilter, Gallery_GetPhotosServer) error
+	GetPhotos(context.Context, *ListFilter) (*PhotosResponse, error)
+	GetByHash(context.Context, *HashFilter) (*Photo, error)
 	mustEmbedUnimplementedGalleryServer()
 }
 
@@ -79,8 +67,11 @@ type GalleryServer interface {
 type UnimplementedGalleryServer struct {
 }
 
-func (UnimplementedGalleryServer) GetPhotos(*PhotoFilter, Gallery_GetPhotosServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetPhotos not implemented")
+func (UnimplementedGalleryServer) GetPhotos(context.Context, *ListFilter) (*PhotosResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPhotos not implemented")
+}
+func (UnimplementedGalleryServer) GetByHash(context.Context, *HashFilter) (*Photo, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetByHash not implemented")
 }
 func (UnimplementedGalleryServer) mustEmbedUnimplementedGalleryServer() {}
 
@@ -95,40 +86,58 @@ func RegisterGalleryServer(s grpc.ServiceRegistrar, srv GalleryServer) {
 	s.RegisterService(&Gallery_ServiceDesc, srv)
 }
 
-func _Gallery_GetPhotos_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(PhotoFilter)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _Gallery_GetPhotos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListFilter)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(GalleryServer).GetPhotos(m, &galleryGetPhotosServer{stream})
+	if interceptor == nil {
+		return srv.(GalleryServer).GetPhotos(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/photo.Gallery/GetPhotos",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GalleryServer).GetPhotos(ctx, req.(*ListFilter))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-type Gallery_GetPhotosServer interface {
-	Send(*Photo) error
-	grpc.ServerStream
-}
-
-type galleryGetPhotosServer struct {
-	grpc.ServerStream
-}
-
-func (x *galleryGetPhotosServer) Send(m *Photo) error {
-	return x.ServerStream.SendMsg(m)
+func _Gallery_GetByHash_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HashFilter)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GalleryServer).GetByHash(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/photo.Gallery/GetByHash",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GalleryServer).GetByHash(ctx, req.(*HashFilter))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 // Gallery_ServiceDesc is the grpc.ServiceDesc for Gallery service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Gallery_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "gallery.Gallery",
+	ServiceName: "photo.Gallery",
 	HandlerType: (*GalleryServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams: []grpc.StreamDesc{
+	Methods: []grpc.MethodDesc{
 		{
-			StreamName:    "GetPhotos",
-			Handler:       _Gallery_GetPhotos_Handler,
-			ServerStreams: true,
+			MethodName: "GetPhotos",
+			Handler:    _Gallery_GetPhotos_Handler,
+		},
+		{
+			MethodName: "GetByHash",
+			Handler:    _Gallery_GetByHash_Handler,
 		},
 	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "proto/gallery.proto",
 }

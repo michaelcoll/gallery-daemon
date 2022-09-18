@@ -14,31 +14,13 @@
  * limitations under the License.
  */
 
-package cmd
+package photo
 
 import (
 	"context"
-	"fmt"
-	"github.com/fatih/color"
-	"github.com/michaelcoll/gallery-daemon/internal/photo"
-
-	"github.com/spf13/cobra"
+	"testing"
 )
 
-// indexCmd represents the index command
-var indexCmd = &cobra.Command{
-	Use:   "index",
-	Short: "Indexes the given folder and create a database file",
-	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Indexing folder %s \n", color.GreenString(folder))
-
-		photo.New().GetService().Index(context.Background(), folder)
-
-		fmt.Println("Done.")
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(indexCmd)
+func TestIndex(t *testing.T) {
+	New().GetService().Index(context.Background(), "../../test")
 }

@@ -23,25 +23,25 @@ func (q *Queries) CountPhotoByHash(ctx context.Context, db DBTX, hash string) (i
 	return count, err
 }
 
-const createPhoto = `-- name: CreatePhoto :exec
-INSERT INTO photos (hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, f_number)
+const createOrReplacePhoto = `-- name: CreateOrReplacePhoto :exec
+REPLACE INTO photos (hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, f_number)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
-type CreatePhotoParams struct {
+type CreateOrReplacePhotoParams struct {
 	Hash         string         `db:"hash"`
 	Path         string         `db:"path"`
 	DateTime     sql.NullString `db:"date_time"`
-	Iso          sql.NullInt32  `db:"iso"`
+	Iso          sql.NullInt64  `db:"iso"`
 	ExposureTime sql.NullString `db:"exposure_time"`
-	XDimension   sql.NullInt32  `db:"x_dimension"`
-	YDimension   sql.NullInt32  `db:"y_dimension"`
+	XDimension   sql.NullInt64  `db:"x_dimension"`
+	YDimension   sql.NullInt64  `db:"y_dimension"`
 	Model        sql.NullString `db:"model"`
 	FNumber      sql.NullString `db:"f_number"`
 }
 
-func (q *Queries) CreatePhoto(ctx context.Context, db DBTX, arg CreatePhotoParams) error {
-	_, err := db.ExecContext(ctx, createPhoto,
+func (q *Queries) CreateOrReplacePhoto(ctx context.Context, db DBTX, arg CreateOrReplacePhotoParams) error {
+	_, err := db.ExecContext(ctx, createOrReplacePhoto,
 		arg.Hash,
 		arg.Path,
 		arg.DateTime,

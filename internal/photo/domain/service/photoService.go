@@ -50,8 +50,8 @@ func New(r repository.PhotoRepository) PhotoService {
 	return PhotoService{r: r}
 }
 
-// Scan scans the folder given in parameter and fill the database with image info and EXIF data found on JPEGs
-func (s *PhotoService) Scan(ctx context.Context, path string) {
+// Index scans the folder given in parameter and fill the database with image info and EXIF data found on JPEGs
+func (s *PhotoService) Index(ctx context.Context, path string) {
 
 	s.r.Connect(false)
 	defer s.r.Close()
@@ -65,11 +65,9 @@ func (s *PhotoService) Scan(ctx context.Context, path string) {
 	}()
 
 	for photo := range imagesToInsert {
-		if !s.r.Exists(ctx, photo.Hash) {
-			err := s.r.Create(ctx, *photo)
-			if err != nil {
-				log.Fatalf("Can't insert photo into database (%v)", err)
-			}
+		err := s.r.CreateOrReplace(ctx, *photo)
+		if err != nil {
+			log.Fatalf("Can't insert photo into database (%v)", err)
 		}
 		_ = bar.Add(1)
 	}

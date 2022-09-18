@@ -19,16 +19,24 @@ package photo
 import (
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/service"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/infrastructure/infra_repository"
+	"github.com/michaelcoll/gallery-daemon/internal/photo/presentation"
 )
 
 type Module struct {
 	s service.PhotoService
+	c presentation.PhotoController
 }
 
 func (m Module) GetService() *service.PhotoService {
 	return &m.s
 }
 
+func (m Module) GetController() *presentation.PhotoController {
+	return &m.c
+}
+
 func New() Module {
-	return Module{s: service.New(infra_repository.New())}
+	repository := infra_repository.New()
+
+	return Module{s: service.New(repository), c: presentation.New(repository)}
 }

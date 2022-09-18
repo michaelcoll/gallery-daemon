@@ -1,22 +1,31 @@
 syntax = "proto3";
 
 
-option go_package = "proto/gallery";
+option go_package = "proto/grpc";
 option java_multiple_files = true;
 option java_package = "fr.michaelcoll.gallery";
 option java_outer_classname = "GalleryProto";
 
-package gallery;
+package photo;
 
 // The gallery service definition
 service Gallery {
 
   // get all photos
-  rpc GetPhotos(PhotoFilter) returns (stream Photo) {}
+  rpc GetPhotos(ListFilter) returns (PhotosResponse) {}
+  rpc GetByHash(HashFilter) returns (Photo) {}
 }
 
-message PhotoFilter {
+message ListFilter {
 
+}
+
+message HashFilter {
+  string Hash = 1;
+}
+
+message PhotosResponse {
+  repeated Photo photos = 1;
 }
 
 message Photo {
@@ -34,6 +43,6 @@ message Photo {
   int32 XDimension = 6;
   int32 YDimension = 7;
   string Model = 8;
-  float Aperture = 9;
+  string FNumber = 9;
 
 }

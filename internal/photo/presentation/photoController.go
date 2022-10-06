@@ -88,3 +88,31 @@ func (c *PhotoController) GetByHash(ctx context.Context, filter *pb.HashFilter) 
 
 	return toGrpc(photo), nil
 }
+
+func (c *PhotoController) ContentByHash(filter *pb.HashFilter, stream pb.Gallery_ContentByHashServer) error {
+
+	c.r.Connect(true)
+	defer c.r.Close()
+
+	err := c.r.ReadContent(stream.Context(), filter.Hash, streamReader{stream: stream})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type streamReader struct {
+	stream pb.Gallery_ContentByHashServer
+}
+
+func (r streamReader) ReadChunk(bytes []byte) error {
+	err := r.stream.Send(&pb.PhotoChunk{
+		Data: bytes,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

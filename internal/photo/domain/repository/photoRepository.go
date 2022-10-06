@@ -21,6 +21,10 @@ import (
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 )
 
+type ImageReader interface {
+	ReadChunk([]byte) error
+}
+
 type PhotoRepository interface {
 	// Connect Opens a database connection
 	Connect(readOnly bool)
@@ -29,6 +33,7 @@ type PhotoRepository interface {
 
 	CreateOrReplace(context.Context, model.Photo) error
 	Get(ctx context.Context, hash string) (model.Photo, error)
+	ReadContent(ctx context.Context, hash string, reader ImageReader) error
 	Exists(ctx context.Context, hash string) bool
 	List(context.Context) ([]model.Photo, error)
 }

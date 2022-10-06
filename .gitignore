@@ -6,7 +6,6 @@
 !.idea/copyright
 *.iml
 
-
 # build
 gallery-daemon
 *.pb.go

@@ -14,6 +14,7 @@ service Gallery {
   // get all photos
   rpc GetPhotos(ListFilter) returns (PhotosResponse) {}
   rpc GetByHash(HashFilter) returns (Photo) {}
+  rpc ContentByHash(HashFilter) returns (stream PhotoChunk) {}
 }
 
 message ListFilter {
@@ -45,4 +46,8 @@ message Photo {
   string Model = 8;
   string FNumber = 9;
 
+}
+
+message PhotoChunk {
+  bytes data = 1;
 }

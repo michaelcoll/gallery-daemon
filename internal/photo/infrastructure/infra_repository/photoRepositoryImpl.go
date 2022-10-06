@@ -17,13 +17,19 @@
 package infra_repository
 
 import (
+	"bufio"
 	"context"
 	"database/sql"
+	"io"
+	"os"
+
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/repository"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/infrastructure/db"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/infrastructure/sqlc"
 )
+
+const BUFFER_SIZE = 1024 * 1024 * 2
 
 type PhotoDBRepository struct {
 	repository.PhotoRepository
@@ -99,4 +105,39 @@ func (r *PhotoDBRepository) List(ctx context.Context) ([]model.Photo, error) {
 	}
 
 	return photos, nil
+}
+
+func (r *PhotoDBRepository) ReadContent(ctx context.Context, hash string, reader repository.ImageReader) error {
+	photo, err := r.q.GetPhoto(ctx, r.c, hash)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Open(photo.Path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	fReader := bufio.NewReader(f)
+	buf := make([]byte, BUFFER_SIZE)
+
+	for {
+		n, err := fReader.Read(buf)
+
+		if err != nil {
+			if err != io.EOF {
+				return err
+			}
+
+			break
+		}
+
+		err = reader.ReadChunk(buf[0:n])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

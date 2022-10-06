@@ -25,6 +25,7 @@ type GalleryClient interface {
 	// get all photos
 	GetPhotos(ctx context.Context, in *ListFilter, opts ...grpc.CallOption) (*PhotosResponse, error)
 	GetByHash(ctx context.Context, in *HashFilter, opts ...grpc.CallOption) (*Photo, error)
+	ContentByHash(ctx context.Context, in *HashFilter, opts ...grpc.CallOption) (Gallery_ContentByHashClient, error)
 }
 
 type galleryClient struct {
@@ -53,6 +54,38 @@ func (c *galleryClient) GetByHash(ctx context.Context, in *HashFilter, opts ...g
 	return out, nil
 }
 
+func (c *galleryClient) ContentByHash(ctx context.Context, in *HashFilter, opts ...grpc.CallOption) (Gallery_ContentByHashClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Gallery_ServiceDesc.Streams[0], "/photo.Gallery/ContentByHash", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &galleryContentByHashClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Gallery_ContentByHashClient interface {
+	Recv() (*PhotoChunk, error)
+	grpc.ClientStream
+}
+
+type galleryContentByHashClient struct {
+	grpc.ClientStream
+}
+
+func (x *galleryContentByHashClient) Recv() (*PhotoChunk, error) {
+	m := new(PhotoChunk)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // GalleryServer is the server API for Gallery service.
 // All implementations must embed UnimplementedGalleryServer
 // for forward compatibility
@@ -60,6 +93,7 @@ type GalleryServer interface {
 	// get all photos
 	GetPhotos(context.Context, *ListFilter) (*PhotosResponse, error)
 	GetByHash(context.Context, *HashFilter) (*Photo, error)
+	ContentByHash(*HashFilter, Gallery_ContentByHashServer) error
 	mustEmbedUnimplementedGalleryServer()
 }
 
@@ -72,6 +106,9 @@ func (UnimplementedGalleryServer) GetPhotos(context.Context, *ListFilter) (*Phot
 }
 func (UnimplementedGalleryServer) GetByHash(context.Context, *HashFilter) (*Photo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetByHash not implemented")
+}
+func (UnimplementedGalleryServer) ContentByHash(*HashFilter, Gallery_ContentByHashServer) error {
+	return status.Errorf(codes.Unimplemented, "method ContentByHash not implemented")
 }
 func (UnimplementedGalleryServer) mustEmbedUnimplementedGalleryServer() {}
 
@@ -122,6 +159,27 @@ func _Gallery_GetByHash_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Gallery_ContentByHash_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(HashFilter)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(GalleryServer).ContentByHash(m, &galleryContentByHashServer{stream})
+}
+
+type Gallery_ContentByHashServer interface {
+	Send(*PhotoChunk) error
+	grpc.ServerStream
+}
+
+type galleryContentByHashServer struct {
+	grpc.ServerStream
+}
+
+func (x *galleryContentByHashServer) Send(m *PhotoChunk) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Gallery_ServiceDesc is the grpc.ServiceDesc for Gallery service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -138,6 +196,12 @@ var Gallery_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Gallery_GetByHash_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "ContentByHash",
+			Handler:       _Gallery_ContentByHash_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "proto/gallery.proto",
 }

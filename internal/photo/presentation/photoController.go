@@ -26,13 +26,13 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/repository"
-	pb "github.com/michaelcoll/gallery-daemon/proto"
+	photov1 "github.com/michaelcoll/gallery-proto/gen/proto/go/photo/v1"
 )
 
 const port = ":9000"
 
 type PhotoController struct {
-	pb.UnimplementedGalleryServer
+	photov1.UnimplementedPhotoServiceServer
 
 	r repository.PhotoRepository
 }
@@ -48,7 +48,7 @@ func (c *PhotoController) Serve() {
 	}
 	// Creates a new gRPC server
 	grpcServer := grpc.NewServer()
-	pb.RegisterGalleryServer(grpcServer, c)
+	photov1.RegisterPhotoServiceServer(grpcServer, c)
 
 	fmt.Printf("Listening on port %s\n", color.GreenString(port))
 	err = grpcServer.Serve(lis)
@@ -58,7 +58,7 @@ func (c *PhotoController) Serve() {
 }
 
 // GetPhotos returns all photos by given filter
-func (c *PhotoController) GetPhotos(ctx context.Context, filter *pb.ListFilter) (*pb.PhotosResponse, error) {
+func (c *PhotoController) GetPhotos(ctx context.Context, filter *photov1.GetPhotosRequest) (*photov1.GetPhotosResponse, error) {
 
 	c.r.Connect(true)
 	defer c.r.Close()
@@ -68,28 +68,28 @@ func (c *PhotoController) GetPhotos(ctx context.Context, filter *pb.ListFilter) 
 		return nil, err
 	}
 
-	responseList := make([]*pb.Photo, len(list))
+	responseList := make([]*photov1.Photo, len(list))
 	for i, photo := range list {
 		responseList[i] = toGrpc(photo)
 	}
 
-	return &pb.PhotosResponse{Photos: responseList}, nil
+	return &photov1.GetPhotosResponse{Photos: responseList}, nil
 }
 
-func (c *PhotoController) GetByHash(ctx context.Context, filter *pb.HashFilter) (*pb.Photo, error) {
+func (c *PhotoController) GetByHash(ctx context.Context, request *photov1.GetByHashRequest) (*photov1.GetByHashResponse, error) {
 
 	c.r.Connect(true)
 	defer c.r.Close()
 
-	photo, err := c.r.Get(ctx, filter.Hash)
+	photo, err := c.r.Get(ctx, request.Hash)
 	if err != nil {
 		return nil, err
 	}
 
-	return toGrpc(photo), nil
+	return &photov1.GetByHashResponse{Photo: toGrpc(photo)}, nil
 }
 
-func (c *PhotoController) ContentByHash(filter *pb.HashFilter, stream pb.Gallery_ContentByHashServer) error {
+func (c *PhotoController) ContentByHash(filter *photov1.ContentByHashRequest, stream photov1.PhotoService_ContentByHashServer) error {
 
 	c.r.Connect(true)
 	defer c.r.Close()
@@ -103,11 +103,11 @@ func (c *PhotoController) ContentByHash(filter *pb.HashFilter, stream pb.Gallery
 }
 
 type streamReader struct {
-	stream pb.Gallery_ContentByHashServer
+	stream photov1.PhotoService_ContentByHashServer
 }
 
 func (r streamReader) ReadChunk(bytes []byte) error {
-	err := r.stream.Send(&pb.PhotoChunk{
+	err := r.stream.Send(&photov1.PhotoServiceContentByHashResponse{
 		Data: bytes,
 	})
 	if err != nil {

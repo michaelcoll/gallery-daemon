@@ -19,11 +19,11 @@ package presentation
 import (
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 
-	grpc "github.com/michaelcoll/gallery-daemon/proto"
+	photov1 "github.com/michaelcoll/gallery-proto/gen/proto/go/photo/v1"
 )
 
-func toGrpc(photo model.Photo) *grpc.Photo {
-	return &grpc.Photo{
+func toGrpc(photo model.Photo) *photov1.Photo {
+	return &photov1.Photo{
 		Hash: photo.Hash,
 		Path: photo.Path,
 

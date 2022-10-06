@@ -22,7 +22,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/repository"
 	"io"
 	"io/ioutil"
 	"log"
@@ -38,6 +37,7 @@ import (
 	"github.com/schollz/progressbar/v3"
 
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/repository"
 )
 
 var supportedExtensions = []string{".jpg", ".jpeg", ".JPG", ".JPEG"}

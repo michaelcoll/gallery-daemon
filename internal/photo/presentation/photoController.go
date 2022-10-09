@@ -19,8 +19,10 @@ package presentation
 import (
 	"context"
 	"fmt"
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 	"log"
 	"net"
+	"strconv"
 
 	"github.com/fatih/color"
 	"google.golang.org/grpc"
@@ -29,20 +31,19 @@ import (
 	photov1 "github.com/michaelcoll/gallery-proto/gen/proto/go/photo/v1"
 )
 
-const port = ":9000"
-
 type PhotoController struct {
 	photov1.UnimplementedPhotoServiceServer
 
-	r repository.PhotoRepository
+	r    repository.PhotoRepository
+	port int32
 }
 
-func New(r repository.PhotoRepository) PhotoController {
-	return PhotoController{r: r}
+func New(r repository.PhotoRepository, param model.ServeParameters) PhotoController {
+	return PhotoController{r: r, port: param.GrpcPort}
 }
 
 func (c *PhotoController) Serve() {
-	lis, err := net.Listen("tcp", port)
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", c.port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -50,7 +51,7 @@ func (c *PhotoController) Serve() {
 	grpcServer := grpc.NewServer()
 	photov1.RegisterPhotoServiceServer(grpcServer, c)
 
-	fmt.Printf("Listening on port %s\n", color.GreenString(port))
+	fmt.Printf("%s Listening on 0.0.0.0:%s\n", color.GreenString("✅"), color.GreenString(strconv.Itoa(int(c.port))))
 	err = grpcServer.Serve(lis)
 	if err != nil {
 		log.Fatalf("Failed to serve: %v", err)
@@ -58,7 +59,7 @@ func (c *PhotoController) Serve() {
 }
 
 // GetPhotos returns all photos by given filter
-func (c *PhotoController) GetPhotos(ctx context.Context, filter *photov1.GetPhotosRequest) (*photov1.GetPhotosResponse, error) {
+func (c *PhotoController) GetPhotos(ctx context.Context, _ *photov1.GetPhotosRequest) (*photov1.GetPhotosResponse, error) {
 
 	c.r.Connect(true)
 	defer c.r.Close()
@@ -87,6 +88,15 @@ func (c *PhotoController) GetByHash(ctx context.Context, request *photov1.GetByH
 	}
 
 	return &photov1.GetByHashResponse{Photo: toGrpc(photo)}, nil
+}
+
+func (c *PhotoController) ExistsByHash(ctx context.Context, request *photov1.ExistsByHashRequest) (*photov1.ExistsByHashResponse, error) {
+	c.r.Connect(true)
+	defer c.r.Close()
+
+	exists := c.r.Exists(ctx, request.Hash)
+
+	return &photov1.ExistsByHashResponse{Exists: exists}, nil
 }
 
 func (c *PhotoController) ContentByHash(filter *photov1.ContentByHashRequest, stream photov1.PhotoService_ContentByHashServer) error {

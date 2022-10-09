@@ -17,26 +17,43 @@
 package photo
 
 import (
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/service"
+	"github.com/michaelcoll/gallery-daemon/internal/photo/infrastructure/caller"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/infrastructure/infra_repository"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/presentation"
 )
 
 type Module struct {
-	s service.PhotoService
-	c presentation.PhotoController
+	photoService    service.PhotoService
+	registerService service.RegisterService
+	c               presentation.PhotoController
 }
 
-func (m Module) GetService() *service.PhotoService {
-	return &m.s
+func (m Module) GetPhotoService() *service.PhotoService {
+	return &m.photoService
+}
+
+func (m Module) GetRegisterService() *service.RegisterService {
+	return &m.registerService
 }
 
 func (m Module) GetController() *presentation.PhotoController {
 	return &m.c
 }
 
-func New() Module {
+func NewForServe(param model.ServeParameters) Module {
+	repository := infra_repository.New()
+	registerCaller := caller.New(param)
+
+	return Module{
+		photoService:    service.New(repository),
+		c:               presentation.New(repository, param),
+		registerService: service.NewRegisterService(registerCaller, param),
+	}
+}
+func NewForIndex() Module {
 	repository := infra_repository.New()
 
-	return Module{s: service.New(repository), c: presentation.New(repository)}
+	return Module{photoService: service.New(repository)}
 }

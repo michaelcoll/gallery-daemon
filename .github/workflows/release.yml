@@ -1,3 +1,5 @@
+name: release
+
 on:
   release:
     types: [created]
@@ -9,7 +11,7 @@ jobs:
     strategy:
       matrix:
         # build and publish in parallel: linux/amd64, linux/arm64, windows/amd64
-        goos: [linux, windows]
+        goos: [linux, windows, darwin]
         goarch: [amd64, arm64]
         exclude:
           - goarch: arm64
@@ -27,3 +29,4 @@ jobs:
           goarch: ${{ matrix.goarch }}
           binary_name: "gallery-daemon"
           ldflags: -X "github.com/michaelcoll/gallery-daemon/cmd.Version=${{ env.APP_VERSION }}" -w -s
+          executable_compression: upx

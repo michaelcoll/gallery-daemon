@@ -20,6 +20,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/michaelcoll/gallery-daemon/internal/photo"
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 )
 
 // serveCmd represents the serve command
@@ -28,10 +29,26 @@ var serveCmd = &cobra.Command{
 	Short: "Starts the server",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		photo.New().GetController().Serve()
+		module := photo.NewForServe(model.ServeParameters{
+			GrpcPort:      grpcPort,
+			ExternalHost:  externalHost,
+			DaemonName:    name,
+			DaemonVersion: Version,
+		})
+
+		go module.GetRegisterService().Register()
+		module.GetController().Serve()
 	},
 }
 
+var grpcPort int32
+var externalHost string
+var name string
+
 func init() {
+	serveCmd.Flags().Int32VarP(&grpcPort, "port", "p", 9000, "Grpc Port")
+	serveCmd.Flags().StringVarP(&externalHost, "external-host", "H", "localhost", "External host")
+	serveCmd.Flags().StringVarP(&name, "name", "n", "localhost-daemon", "Daemon name")
+
 	rootCmd.AddCommand(serveCmd)
 }

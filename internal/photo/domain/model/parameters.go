@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package photo
+package model
 
-import (
-	"context"
-	"testing"
-)
-
-func TestIndex(t *testing.T) {
-	NewForIndex().GetPhotoService().Index(context.Background(), "../../test")
+type ServeParameters struct {
+	GrpcPort      int32
+	ExternalHost  string
+	DaemonName    string
+	DaemonVersion string
 }

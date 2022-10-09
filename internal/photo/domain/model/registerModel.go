@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package photo
+package model
 
-import (
-	"context"
-	"testing"
-)
+import "github.com/google/uuid"
 
-func TestIndex(t *testing.T) {
-	NewForIndex().GetPhotoService().Index(context.Background(), "../../test")
+type RegisterResponse struct {
+	Id    uuid.UUID
+	ExpIn int32
 }

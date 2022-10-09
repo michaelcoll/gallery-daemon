@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package photo
+package service
 
 import (
-	"context"
-	"testing"
+	"github.com/google/uuid"
+
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 )
 
-func TestIndex(t *testing.T) {
-	NewForIndex().GetPhotoService().Index(context.Background(), "../../test")
+type RegisterCaller interface {
+	Register() (*model.RegisterResponse, error)
+	HeartBeat(uuid.UUID) error
 }

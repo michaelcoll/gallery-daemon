@@ -30,7 +30,7 @@ var rootCmd = &cobra.Command{
 The daemon that index, and stream all your photos to the backend.`,
 }
 
-var version = "undefined"
+var Version = "undefined"
 
 var verbose bool
 var folder string
@@ -45,7 +45,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Version = version
+	rootCmd.Version = Version
 
 	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "Verbose display")
 	rootCmd.PersistentFlags().StringVarP(&folder, "folder", "f", ".", "The folder containing the photos")

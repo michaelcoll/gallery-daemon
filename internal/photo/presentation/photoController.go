@@ -19,7 +19,6 @@ package presentation
 import (
 	"context"
 	"fmt"
-	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 	"log"
 	"net"
 	"strconv"
@@ -27,6 +26,7 @@ import (
 	"github.com/fatih/color"
 	"google.golang.org/grpc"
 
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/repository"
 	photov1 "github.com/michaelcoll/gallery-proto/gen/proto/go/photo/v1"
 )
@@ -116,9 +116,10 @@ type streamReader struct {
 	stream photov1.PhotoService_ContentByHashServer
 }
 
-func (r streamReader) ReadChunk(bytes []byte) error {
+func (r streamReader) ReadChunk(bytes []byte, contentType string) error {
 	err := r.stream.Send(&photov1.PhotoServiceContentByHashResponse{
-		Data: bytes,
+		Data:        bytes,
+		ContentType: contentType,
 	})
 	if err != nil {
 		return err

@@ -36,11 +36,10 @@ import (
 	"github.com/cozy/goexif2/tiff"
 	"github.com/schollz/progressbar/v3"
 
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/consts"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/repository"
 )
-
-var supportedExtensions = []string{".jpg", ".jpeg", ".JPG", ".JPEG"}
 
 type PhotoService struct {
 	r repository.PhotoRepository
@@ -95,7 +94,7 @@ func getImageFiles(path string, imagesToInsert chan *model.Photo) {
 }
 
 func hasSupportedExtension(filename string) bool {
-	for _, ext := range supportedExtensions {
+	for ext := range consts.SupportedExtensionsAndContentTypes {
 		if strings.HasSuffix(filename, ext) {
 			return true
 		}

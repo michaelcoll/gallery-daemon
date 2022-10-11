@@ -51,7 +51,7 @@ func (c *PhotoController) Serve() {
 	grpcServer := grpc.NewServer()
 	photov1.RegisterPhotoServiceServer(grpcServer, c)
 
-	fmt.Printf("%s Listening on 0.0.0.0:%s\n", color.GreenString("✅"), color.GreenString(strconv.Itoa(int(c.port))))
+	fmt.Printf("%s Listening on 0.0.0.0:%s\n", color.GreenString("✓"), color.GreenString(strconv.Itoa(int(c.port))))
 	err = grpcServer.Serve(lis)
 	if err != nil {
 		log.Fatalf("Failed to serve: %v", err)

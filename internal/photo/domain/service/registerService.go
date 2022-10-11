@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"strings"
 	"time"
 
@@ -53,7 +55,7 @@ func (s *RegisterService) Register() {
 				s.expIn = response.ExpIn
 				s.hasConnected = true
 				s.connectionUp = true
-				fmt.Printf("%s Daemon registered.\n", color.GreenString("✅"))
+				fmt.Printf("%s Daemon registered.\n", color.GreenString("✓"))
 			}
 		}
 
@@ -67,12 +69,13 @@ func (s *RegisterService) Register() {
 }
 
 func (s *RegisterService) connectionProblem(err error) {
-	if s.connectionUp && s.hasConnected {
-		fmt.Printf("%s Connection lost : %s\n", color.RedString("❌"), getErrorMessage(err))
+	st, _ := status.FromError(err)
+	if s.connectionUp && s.hasConnected && st.Code() != codes.NotFound {
+		fmt.Printf("%s Connection lost : %s\n", color.RedString("✗"), getErrorMessage(err))
 		s.connectionUp = false
 	}
 	if !s.hasConnected && !s.connectionUp && !s.canConnect {
-		fmt.Printf("%s Can't connect : %s\n", color.RedString("❌"), getErrorMessage(err))
+		fmt.Printf("%s Can't connect : %s\n", color.RedString("✗"), getErrorMessage(err))
 		s.canConnect = true
 	}
 }

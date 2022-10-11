@@ -20,8 +20,13 @@ import (
 	"bufio"
 	"context"
 	"database/sql"
+	"errors"
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/consts"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/repository"
@@ -29,7 +34,7 @@ import (
 	"github.com/michaelcoll/gallery-daemon/internal/photo/infrastructure/sqlc"
 )
 
-const BUFFER_SIZE = 1024 * 1024 * 2
+const BufferSize = 1024 * 1024 * 2
 
 type PhotoDBRepository struct {
 	repository.PhotoRepository
@@ -69,6 +74,9 @@ func (r *PhotoDBRepository) CreateOrReplace(ctx context.Context, photo model.Pho
 
 func (r *PhotoDBRepository) Get(ctx context.Context, hash string) (model.Photo, error) {
 	photo, err := r.q.GetPhoto(ctx, r.c, hash)
+	if err == sql.ErrNoRows {
+		return model.Photo{}, status.Error(codes.NotFound, "media not found")
+	}
 	if err != nil {
 		return model.Photo{}, err
 	}
@@ -109,6 +117,14 @@ func (r *PhotoDBRepository) List(ctx context.Context) ([]model.Photo, error) {
 
 func (r *PhotoDBRepository) ReadContent(ctx context.Context, hash string, reader repository.ImageReader) error {
 	photo, err := r.q.GetPhoto(ctx, r.c, hash)
+	if err == sql.ErrNoRows {
+		return status.Error(codes.NotFound, "media not found")
+	}
+	if err != nil {
+		return err
+	}
+
+	contentType, err := detectContentType(photo.Path)
 	if err != nil {
 		return err
 	}
@@ -120,7 +136,7 @@ func (r *PhotoDBRepository) ReadContent(ctx context.Context, hash string, reader
 	defer f.Close()
 
 	fReader := bufio.NewReader(f)
-	buf := make([]byte, BUFFER_SIZE)
+	buf := make([]byte, BufferSize)
 
 	for {
 		n, err := fReader.Read(buf)
@@ -133,11 +149,21 @@ func (r *PhotoDBRepository) ReadContent(ctx context.Context, hash string, reader
 			break
 		}
 
-		err = reader.ReadChunk(buf[0:n])
+		err = reader.ReadChunk(buf[0:n], contentType)
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func detectContentType(photoPath string) (string, error) {
+	for ext, contentType := range consts.SupportedExtensionsAndContentTypes {
+		if strings.HasSuffix(photoPath, ext) {
+			return contentType, nil
+		}
+	}
+
+	return "", errors.New("content type not supported")
 }

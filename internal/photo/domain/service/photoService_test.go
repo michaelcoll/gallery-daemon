@@ -73,3 +73,13 @@ func TestGetImageFiles(t *testing.T) {
 
 	assert.Equal(t, expectedImageCount, len(imagesToInsert), "Invalid image count")
 }
+
+func TestHasSupportedExtension(t *testing.T) {
+	hasExtension := hasSupportedExtension("../../../../test/exif_sample.jpg")
+
+	assert.Equal(t, true, hasExtension, "should have supported extension")
+
+	hasExtension = hasSupportedExtension("../../../../test/exif_sample.png")
+
+	assert.Equal(t, false, hasExtension, "should not have supported extension")
+}

@@ -159,11 +159,20 @@ func (r *PhotoDBRepository) ReadContent(ctx context.Context, hash string, reader
 }
 
 func detectContentType(photoPath string) (string, error) {
-	for ext, contentType := range consts.SupportedExtensionsAndContentTypes {
+	for ext, contentType := range consts.ExtensionsAndContentTypesMap {
 		if strings.HasSuffix(photoPath, ext) {
 			return contentType, nil
 		}
 	}
 
 	return "", errors.New("content type not supported")
+}
+
+func (r *PhotoDBRepository) Delete(ctx context.Context, path string) error {
+	err := r.q.DeletePhotoByPath(ctx, r.c, path)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

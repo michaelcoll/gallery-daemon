@@ -14,18 +14,29 @@
  * limitations under the License.
  */
 
-package consts
+package cmd
 
-var ExtensionsAndContentTypesMap = map[string]string{
-	".jpg":  "image/jpeg",
-	".JPG":  "image/jpeg",
-	".jpeg": "image/jpeg",
-	".JPEG": "image/jpeg",
+import (
+	"fmt"
+
+	"github.com/fatih/color"
+	"github.com/spf13/cobra"
+
+	"github.com/michaelcoll/gallery-daemon/internal/photo"
+)
+
+// indexCmd represents the index command
+var watchCmd = &cobra.Command{
+	Use:   "watch",
+	Short: "Watch the given folder for updates",
+	Long:  ``,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("Watching folder %s \n", color.GreenString(folder))
+
+		photo.NewForIndex().GetPhotoService().Watch(folder)
+	},
 }
 
-var SupportedExtensions = []string{
-	".jpg",
-	".JPG",
-	".jpeg",
-	".JPEG",
+func init() {
+	rootCmd.AddCommand(watchCmd)
 }

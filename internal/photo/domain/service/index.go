@@ -23,11 +23,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"math/big"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -55,52 +53,23 @@ func (s *PhotoService) Index(ctx context.Context, path string) {
 	s.r.Connect(false)
 	defer s.r.Close()
 
-	imagesToInsert := make(chan *model.Photo)
-
 	bar := progressbar.Default(-1, fmt.Sprintf("Finding all images in folder %s ... ", path))
-	go func() {
-		getImageFiles(path, imagesToInsert)
-		close(imagesToInsert)
-	}()
-
-	for photo := range imagesToInsert {
-		err := s.r.CreateOrReplace(ctx, *photo)
-		if err != nil {
-			log.Fatalf("Can't insert photo into database (%v)", err)
-		}
+	// Find images in the folder
+	for _, imagePath := range findFiles(path, false, consts.SupportedExtensions) {
+		s.indexImage(ctx, imagePath)
 		_ = bar.Add(1)
 	}
 	_ = bar.Clear()
+
 }
 
-func getImageFiles(path string, imagesToInsert chan *model.Photo) {
-	files, err := ioutil.ReadDir(path)
+func (s *PhotoService) indexImage(ctx context.Context, imagePath string) {
+	photo := &model.Photo{Path: imagePath}
+	extractData(photo)
+	err := s.r.CreateOrReplace(ctx, *photo)
 	if err != nil {
-		log.Fatalf("Can't open folder : %s (%v)\n", path, err)
+		log.Fatalf("Can't insert photo located at '%s' into database (%v)\n", imagePath, err)
 	}
-
-	for _, file := range files {
-		imagePath := filepath.Join(path, file.Name())
-		if file.IsDir() {
-			getImageFiles(imagePath, imagesToInsert)
-		} else if hasSupportedExtension(file.Name()) {
-
-			photo := &model.Photo{Path: imagePath}
-
-			extractData(photo)
-			imagesToInsert <- photo
-		}
-	}
-}
-
-func hasSupportedExtension(filename string) bool {
-	for ext := range consts.SupportedExtensionsAndContentTypes {
-		if strings.HasSuffix(filename, ext) {
-			return true
-		}
-	}
-
-	return false
 }
 
 func extractData(photo *model.Photo) {
@@ -189,4 +158,11 @@ func (w *walker) Walk(name exif.FieldName, tag *tiff.Tag) error {
 
 func toString(rat *big.Rat) string {
 	return fmt.Sprintf("%d/%d", rat.Num(), rat.Denom())
+}
+
+func (s *PhotoService) deleteImage(ctx context.Context, imagePath string) {
+	err := s.r.Delete(ctx, imagePath)
+	if err != nil {
+		log.Fatalf("Can't delete photo with path '%s' (%v)\n", imagePath, err)
+	}
 }

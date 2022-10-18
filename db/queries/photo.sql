@@ -15,3 +15,7 @@ WHERE hash = ?;
 -- name: List :many
 SELECT *
 FROM photos;
+
+-- name: DeletePhotoByPath :exec
+DELETE FROM photos
+WHERE path = ?

@@ -34,8 +34,6 @@ const (
 	expectedFNumber      = "f/2.8"
 
 	expectedSha = "ff8f2f1eb60f03c2cfb7e8d823cb8bcb7282558fe0a47ccb3df73abcfeb91eef"
-
-	expectedImageCount = 88
 )
 
 func TestExtractExif(t *testing.T) {
@@ -63,23 +61,4 @@ func TestSha(t *testing.T) {
 	}
 
 	assert.Equal(t, expectedSha, sha, "Invalid Sha")
-}
-
-func TestGetImageFiles(t *testing.T) {
-	imagesToInsert := make(chan *model.Photo, 1000)
-
-	getImageFiles("../../../../test", imagesToInsert)
-	close(imagesToInsert)
-
-	assert.Equal(t, expectedImageCount, len(imagesToInsert), "Invalid image count")
-}
-
-func TestHasSupportedExtension(t *testing.T) {
-	hasExtension := hasSupportedExtension("../../../../test/exif_sample.jpg")
-
-	assert.Equal(t, true, hasExtension, "should have supported extension")
-
-	hasExtension = hasSupportedExtension("../../../../test/exif_sample.png")
-
-	assert.Equal(t, false, hasExtension, "should not have supported extension")
 }

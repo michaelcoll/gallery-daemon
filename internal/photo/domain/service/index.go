@@ -18,7 +18,7 @@ package service
 
 import (
 	"context"
-	"crypto/sha256"
+	"crypto/sha1"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -26,6 +26,7 @@ import (
 	"log"
 	"math/big"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -40,6 +41,8 @@ import (
 )
 
 type PhotoService struct {
+	photoPath *string
+
 	r repository.PhotoRepository
 }
 
@@ -50,24 +53,36 @@ func New(r repository.PhotoRepository) PhotoService {
 // Index scans the folder given in parameter and fill the database with image info and EXIF data found on JPEGs
 func (s *PhotoService) Index(ctx context.Context, path string) {
 
+	s.photoPath = absPath(path)
+
 	s.r.Connect(false)
 	defer s.r.Close()
 
-	bar := progressbar.Default(-1, fmt.Sprintf("Finding all images in folder %s ... ", path))
+	bar := progressbar.Default(-1, fmt.Sprintf("Indexing all images in folder %s ... ", *s.photoPath))
 	// Find images in the folder
-	for _, imagePath := range findFiles(path, false, consts.SupportedExtensions) {
+	for _, imagePath := range findFiles(*s.photoPath, false, consts.SupportedExtensions) {
 		s.indexImage(ctx, imagePath)
 		_ = bar.Add(1)
 	}
+	_ = bar.Finish()
 	_ = bar.Clear()
 
+}
+
+func absPath(path string) *string {
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		log.Fatalf("Can't determine the absolute path '%s' (%v)\n", path, err)
+	}
+
+	return &absPath
 }
 
 func (s *PhotoService) indexImage(ctx context.Context, imagePath string) {
 	photo := &model.Photo{Path: imagePath}
 	extractData(photo)
-	err := s.r.CreateOrReplace(ctx, *photo)
-	if err != nil {
+
+	if err := s.r.CreateOrReplace(ctx, *photo); err != nil {
 		log.Fatalf("Can't insert photo located at '%s' into database (%v)\n", imagePath, err)
 	}
 }
@@ -80,8 +95,7 @@ func extractData(photo *model.Photo) {
 
 	photo.Hash = hash
 
-	err = extractExif(photo)
-	if err != nil {
+	if err = extractExif(photo); err != nil {
 		log.Printf("Error while extracting EXIF from file %s : %v\n", photo.Path, err)
 	}
 }
@@ -95,7 +109,7 @@ func sha(path string) (string, error) {
 	}
 	defer f.Close()
 
-	h := sha256.New()
+	h := sha1.New()
 	if _, err := io.Copy(h, f); err != nil {
 		return "", err
 	}
@@ -161,8 +175,7 @@ func toString(rat *big.Rat) string {
 }
 
 func (s *PhotoService) deleteImage(ctx context.Context, imagePath string) {
-	err := s.r.Delete(ctx, imagePath)
-	if err != nil {
+	if err := s.r.Delete(ctx, imagePath); err != nil {
 		log.Fatalf("Can't delete photo with path '%s' (%v)\n", imagePath, err)
 	}
 }

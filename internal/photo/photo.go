@@ -42,8 +42,8 @@ func (m Module) GetController() *presentation.PhotoController {
 	return &m.c
 }
 
-func NewForServe(param model.ServeParameters) Module {
-	repository := infra_repository.New()
+func NewForServe(localdb bool, photosPath string, param model.ServeParameters) Module {
+	repository := infra_repository.New(localdb, photosPath)
 	registerCaller := caller.New(param)
 
 	return Module{
@@ -52,8 +52,8 @@ func NewForServe(param model.ServeParameters) Module {
 		registerService: service.NewRegisterService(registerCaller, param),
 	}
 }
-func NewForIndex() Module {
-	repository := infra_repository.New()
+func NewForIndex(localdb bool, photosPath string) Module {
+	repository := infra_repository.New(localdb, photosPath)
 
 	return Module{photoService: service.New(repository)}
 }

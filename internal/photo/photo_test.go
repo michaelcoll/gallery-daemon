@@ -22,5 +22,5 @@ import (
 )
 
 func TestIndex(t *testing.T) {
-	NewForIndex().GetPhotoService().Index(context.Background(), "../../test")
+	NewForIndex(true, ".").GetPhotoService().Index(context.Background(), "../../test")
 }

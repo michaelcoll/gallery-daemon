@@ -27,11 +27,12 @@ var rootCmd = &cobra.Command{
 	Use:   "gallery-daemon",
 	Short: "",
 	Long: `
-The daemon that index, and stream all your photos to the backend.`,
+The daemon that index, and stream all the photos to the backend.`,
 }
 
 var Version = "undefined"
 
+var localDb bool
 var verbose bool
 var folder string
 
@@ -47,6 +48,7 @@ func Execute() {
 func init() {
 	rootCmd.Version = Version
 
+	rootCmd.PersistentFlags().BoolVar(&localDb, "local-db", false, "Place the database in the current folder")
 	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "Verbose display")
 	rootCmd.PersistentFlags().StringVarP(&folder, "folder", "f", ".", "The folder containing the photos")
 }

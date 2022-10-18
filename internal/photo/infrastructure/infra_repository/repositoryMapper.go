@@ -19,12 +19,13 @@ package infra_repository
 import (
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/infrastructure/sqlc"
+	"strings"
 )
 
 func (r *PhotoDBRepository) toInfra(photo model.Photo) (sqlc.CreateOrReplacePhotoParams, error) {
 	params := sqlc.CreateOrReplacePhotoParams{
 		Hash: photo.Hash,
-		Path: photo.Path,
+		Path: strings.ReplaceAll(photo.Path, r.databaseLocation, ""),
 	}
 
 	if err := params.DateTime.Scan(photo.DateTime); err != nil {
@@ -58,7 +59,7 @@ func (r *PhotoDBRepository) toDomain(photo sqlc.Photo) (model.Photo, error) {
 
 	m := &model.Photo{
 		Hash: photo.Hash,
-		Path: photo.Path,
+		Path: r.databaseLocation + photo.Path,
 	}
 
 	if photo.DateTime.Valid {

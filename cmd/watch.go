@@ -33,7 +33,7 @@ var watchCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Watching folder %s \n", color.GreenString(folder))
 
-		photo.NewForIndex().GetPhotoService().Watch(folder)
+		photo.NewForIndex(localDb, folder).GetPhotoService().Watch(folder)
 	},
 }
 

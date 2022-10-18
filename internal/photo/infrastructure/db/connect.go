@@ -18,13 +18,18 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func Connect(readOnly bool) *sql.DB {
-	db, err := sql.Open("sqlite3", getDBUrl(readOnly))
+const (
+	databaseName = "photos.db"
+)
+
+func Connect(readOnly bool, baseLocation string) *sql.DB {
+	db, err := sql.Open("sqlite3", getDBUrl(readOnly, baseLocation))
 	if err != nil {
 		log.Fatalf("Can't open database %v", err)
 	}
@@ -32,10 +37,14 @@ func Connect(readOnly bool) *sql.DB {
 	return db
 }
 
-func getDBUrl(readOnly bool) string {
+func getDBUrl(readOnly bool, baseLocation string) string {
+
+	var options string
 	if readOnly {
-		return "file:./photos.db?cache=shared&mode=ro"
+		options = "cache=shared&mode=ro&_auto_vacuum=full&_journal_mode=WAL"
 	} else {
-		return "file:./photos.db?cache=shared&mode=rwc&_auto_vacuum=full"
+		options = "cache=shared&mode=rwc&_auto_vacuum=full&_journal_mode=WAL"
 	}
+
+	return fmt.Sprintf("file:%s/%s?%s", baseLocation, databaseName, options)
 }

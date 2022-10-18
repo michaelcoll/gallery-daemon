@@ -37,4 +37,5 @@ type PhotoRepository interface {
 	ReadContent(ctx context.Context, hash string, reader ImageReader) error
 	Exists(ctx context.Context, hash string) bool
 	List(context.Context) ([]model.Photo, error)
+	Delete(ctx context.Context, path string) error
 }

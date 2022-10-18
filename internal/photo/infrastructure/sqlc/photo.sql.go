@@ -55,6 +55,16 @@ func (q *Queries) CreateOrReplacePhoto(ctx context.Context, db DBTX, arg CreateO
 	return err
 }
 
+const deletePhotoByPath = `-- name: DeletePhotoByPath :exec
+DELETE FROM photos
+WHERE path = ?
+`
+
+func (q *Queries) DeletePhotoByPath(ctx context.Context, db DBTX, path string) error {
+	_, err := db.ExecContext(ctx, deletePhotoByPath, path)
+	return err
+}
+
 const getPhoto = `-- name: GetPhoto :one
 SELECT hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, f_number
 FROM photos

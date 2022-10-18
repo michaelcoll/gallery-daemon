@@ -33,7 +33,7 @@ var indexCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Indexing folder %s \n", color.GreenString(folder))
 
-		photo.NewForIndex().GetPhotoService().Index(context.Background(), folder)
+		photo.NewForIndex(localDb, folder).GetPhotoService().Index(context.Background(), folder)
 
 		fmt.Println("Done.")
 	},

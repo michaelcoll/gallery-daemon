@@ -29,7 +29,7 @@ var serveCmd = &cobra.Command{
 	Short: "Starts the server",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		module := photo.NewForServe(model.ServeParameters{
+		module := photo.NewForServe(localDb, folder, model.ServeParameters{
 			GrpcPort:      grpcPort,
 			ExternalHost:  externalHost,
 			DaemonName:    name,

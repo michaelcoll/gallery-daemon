@@ -39,20 +39,29 @@ const BufferSize = 1024 * 1024 * 2
 type PhotoDBRepository struct {
 	repository.PhotoRepository
 
+	databaseLocation string
+
 	c *sql.DB
 	q *sqlc.Queries
 }
 
-func New() *PhotoDBRepository {
-	connection := db.Connect(false)
+func New(localDb bool, photosPath string) *PhotoDBRepository {
+	var databaseLocation string
+	if localDb {
+		databaseLocation = "."
+	} else {
+		databaseLocation = photosPath
+	}
+
+	connection := db.Connect(false, databaseLocation)
 	defer connection.Close()
 	db.New(connection).Migrate()
 
-	return &PhotoDBRepository{q: sqlc.New()}
+	return &PhotoDBRepository{databaseLocation: databaseLocation, q: sqlc.New()}
 }
 
 func (r *PhotoDBRepository) Connect(readOnly bool) {
-	r.c = db.Connect(readOnly)
+	r.c = db.Connect(readOnly, r.databaseLocation)
 }
 
 func (r *PhotoDBRepository) Close() {

@@ -33,7 +33,7 @@ const (
 	expectedModel        = "iPhone 4"
 	expectedFNumber      = "f/2.8"
 
-	expectedSha = "ff8f2f1eb60f03c2cfb7e8d823cb8bcb7282558fe0a47ccb3df73abcfeb91eef"
+	expectedSha = "4a1e1af6a9a204a36018c3051f6221e9e000690f"
 )
 
 func TestExtractExif(t *testing.T) {

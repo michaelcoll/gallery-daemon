@@ -27,7 +27,7 @@ import (
 type Module struct {
 	photoService    service.PhotoService
 	registerService service.RegisterService
-	c               presentation.PhotoController
+	controller      presentation.PhotoController
 }
 
 func (m Module) GetPhotoService() *service.PhotoService {
@@ -39,7 +39,7 @@ func (m Module) GetRegisterService() *service.RegisterService {
 }
 
 func (m Module) GetController() *presentation.PhotoController {
-	return &m.c
+	return &m.controller
 }
 
 func NewForServe(localdb bool, photosPath string, param model.ServeParameters) Module {
@@ -48,7 +48,7 @@ func NewForServe(localdb bool, photosPath string, param model.ServeParameters) M
 
 	return Module{
 		photoService:    service.New(repository),
-		c:               presentation.New(repository, param),
+		controller:      presentation.New(repository, param),
 		registerService: service.NewRegisterService(registerCaller, param),
 	}
 }

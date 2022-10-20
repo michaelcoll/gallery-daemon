@@ -38,4 +38,6 @@ type PhotoRepository interface {
 	Exists(ctx context.Context, hash string) bool
 	List(context.Context) ([]model.Photo, error)
 	Delete(ctx context.Context, path string) error
+	DeleteAll(ctx context.Context) error
+	CountPhotos(ctx context.Context) (int, error)
 }

@@ -60,3 +60,12 @@ func hasExtension(filename string, extensions []string) bool {
 
 	return false
 }
+
+func absPath(path string) *string {
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		log.Fatalf("Can't determine the absolute path '%s' (%v)\n", path, err)
+	}
+
+	return &absPath
+}

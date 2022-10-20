@@ -18,8 +18,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
-	"github.com/fatih/color"
 	"github.com/michaelcoll/gallery-daemon/internal/photo"
 
 	"github.com/spf13/cobra"
@@ -28,14 +26,16 @@ import (
 // indexCmd represents the index command
 var indexCmd = &cobra.Command{
 	Use:   "index",
-	Short: "Indexes the given folder and create a database file",
-	Long:  ``,
+	Short: "",
+	Long: `
+Starts the daemon in index mode only.
+
+Indexes the given folder and create a database file.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Indexing folder %s \n", color.GreenString(folder))
+		service := photo.NewForIndex(localDb, folder).GetPhotoService()
+		defer service.CloseDb()
 
-		photo.NewForIndex(localDb, folder).GetPhotoService().Index(context.Background(), folder)
-
-		fmt.Println("Done.")
+		service.ReIndex(context.Background(), folder)
 	},
 }
 

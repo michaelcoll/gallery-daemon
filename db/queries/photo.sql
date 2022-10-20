@@ -12,10 +12,18 @@ SELECT COUNT(*)
 FROM photos
 WHERE hash = ?;
 
+-- name: CountPhotos :one
+SELECT COUNT(*)
+FROM photos;
+
 -- name: List :many
 SELECT *
 FROM photos;
 
 -- name: DeletePhotoByPath :exec
 DELETE FROM photos
-WHERE path = ?
+WHERE path = ?;
+
+-- name: DeleteAllPhotos :exec
+DELETE FROM photos
+WHERE 1

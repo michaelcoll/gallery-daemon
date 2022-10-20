@@ -18,6 +18,9 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"github.com/fatih/color"
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/consts"
 	"log"
 
 	"github.com/fsnotify/fsnotify"
@@ -38,6 +41,8 @@ func (s *PhotoService) Watch(path string) {
 		log.Fatalf("Could not add the folder : %v", err)
 	}
 
+	fmt.Printf("%s Watching folder %s \n", color.GreenString("✓"), color.GreenString(path))
+
 	for {
 		select {
 		case event, ok := <-watcher.Events:
@@ -47,8 +52,6 @@ func (s *PhotoService) Watch(path string) {
 
 			if isCreateEvent(event) || isDeleteEvent(event) {
 				s.handleEvent(event)
-			} else {
-				log.Println("event:", event)
 			}
 
 		case err, ok := <-watcher.Errors:
@@ -71,6 +74,10 @@ func isDeleteEvent(event fsnotify.Event) bool {
 }
 
 func (s *PhotoService) handleEvent(event fsnotify.Event) {
+	if !hasExtension(event.Name, consts.SupportedExtensions) {
+		return
+	}
+
 	s.r.Connect(false)
 	defer s.r.Close()
 

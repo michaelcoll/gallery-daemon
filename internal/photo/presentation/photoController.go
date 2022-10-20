@@ -91,6 +91,10 @@ func (c *PhotoController) GetByHash(ctx context.Context, request *photov1.GetByH
 }
 
 func (c *PhotoController) ExistsByHash(ctx context.Context, request *photov1.ExistsByHashRequest) (*photov1.ExistsByHashResponse, error) {
+	if len(request.Hash) < 40 {
+		return &photov1.ExistsByHashResponse{Exists: false}, nil
+	}
+
 	c.r.Connect(true)
 	defer c.r.Close()
 

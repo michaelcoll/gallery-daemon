@@ -23,6 +23,18 @@ func (q *Queries) CountPhotoByHash(ctx context.Context, db DBTX, hash string) (i
 	return count, err
 }
 
+const countPhotos = `-- name: CountPhotos :one
+SELECT COUNT(*)
+FROM photos
+`
+
+func (q *Queries) CountPhotos(ctx context.Context, db DBTX) (int64, error) {
+	row := db.QueryRowContext(ctx, countPhotos)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createOrReplacePhoto = `-- name: CreateOrReplacePhoto :exec
 REPLACE INTO photos (hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, f_number)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -52,6 +64,16 @@ func (q *Queries) CreateOrReplacePhoto(ctx context.Context, db DBTX, arg CreateO
 		arg.Model,
 		arg.FNumber,
 	)
+	return err
+}
+
+const deleteAllPhotos = `-- name: DeleteAllPhotos :exec
+DELETE FROM photos
+WHERE 1
+`
+
+func (q *Queries) DeleteAllPhotos(ctx context.Context, db DBTX) error {
+	_, err := db.ExecContext(ctx, deleteAllPhotos)
 	return err
 }
 

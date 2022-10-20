@@ -20,71 +20,56 @@ import (
 	"context"
 	"crypto/sha1"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"io"
 	"log"
-	"math/big"
 	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
-	"time"
 
-	"github.com/cozy/goexif2/exif"
-	"github.com/cozy/goexif2/tiff"
+	"github.com/fatih/color"
 	"github.com/schollz/progressbar/v3"
 
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/consts"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
-	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/repository"
 )
 
-type PhotoService struct {
-	photoPath *string
-
-	r repository.PhotoRepository
-}
-
-func New(r repository.PhotoRepository) PhotoService {
-	return PhotoService{r: r}
-}
-
-// Index scans the folder given in parameter and fill the database with image info and EXIF data found on JPEGs
+// Index tests if the number of images present in the database is different from the number present in the filesystem.
+// If this is the case it launches a re-indexation otherwise it do nothing
 func (s *PhotoService) Index(ctx context.Context, path string) {
+	files := findFiles(path, false, consts.SupportedExtensions)
+
+	count, err := s.r.CountPhotos(ctx)
+	if err != nil {
+		log.Fatalf("Can't read the count of photos in the database (%v)\n", err)
+	}
+	if len(files) != count {
+		s.ReIndex(ctx, path)
+	} else {
+		fmt.Printf("%s Up-to-date. \n", color.GreenString("✓"))
+	}
+}
+
+// ReIndex scans the folder given in parameter and fill the database with image info and EXIF data found on JPEGs
+func (s *PhotoService) ReIndex(ctx context.Context, path string) {
+	fmt.Printf("%s Re-indexing folder %s \n", color.GreenString("✓"), color.GreenString(path))
 
 	s.photoPath = absPath(path)
 
-	s.r.Connect(false)
-	defer s.r.Close()
+	bar := progressbar.Default(-1, "Clearing database... ")
+	err := s.r.DeleteAll(ctx)
+	if err != nil {
+		log.Fatalf("Can't delete all photos in the database (%v)\n", err)
+	}
+	_ = bar.Clear()
 
-	bar := progressbar.Default(-1, fmt.Sprintf("Indexing all images in folder %s ... ", *s.photoPath))
+	bar = progressbar.Default(-1, "Searching all the images... ")
 	// Find images in the folder
 	for _, imagePath := range findFiles(*s.photoPath, false, consts.SupportedExtensions) {
 		s.indexImage(ctx, imagePath)
 		_ = bar.Add(1)
 	}
-	_ = bar.Finish()
 	_ = bar.Clear()
 
-}
-
-func absPath(path string) *string {
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		log.Fatalf("Can't determine the absolute path '%s' (%v)\n", path, err)
-	}
-
-	return &absPath
-}
-
-func (s *PhotoService) indexImage(ctx context.Context, imagePath string) {
-	photo := &model.Photo{Path: imagePath}
-	extractData(photo)
-
-	if err := s.r.CreateOrReplace(ctx, *photo); err != nil {
-		log.Fatalf("Can't insert photo located at '%s' into database (%v)\n", imagePath, err)
-	}
+	fmt.Printf("%s Done. \n", color.GreenString("✓"))
 }
 
 func extractData(photo *model.Photo) {
@@ -115,67 +100,4 @@ func sha(path string) (string, error) {
 	}
 
 	return hex.EncodeToString(h.Sum(nil)), nil
-}
-
-// extractExif extracts the EXIF data of a photo
-func extractExif(photo *model.Photo) error {
-	f, err := os.Open(photo.Path)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-
-	x, err := exif.Decode(f)
-	if err != nil && !errors.Is(err, io.EOF) {
-		fmt.Printf("Error reading EXIF data in file : %s (%v)\n", photo.Path, err)
-	} else if err == nil {
-		err := x.Walk(&walker{p: photo})
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	return nil
-}
-
-type walker struct {
-	p *model.Photo
-}
-
-func (w *walker) Walk(name exif.FieldName, tag *tiff.Tag) error {
-	if name == "DateTime" {
-		dateTimeStr, _ := tag.StringVal()
-		date, _ := time.Parse("2006:01:02 15:04:05", dateTimeStr)
-
-		w.p.DateTime = date.Format("2006-01-02T15:04:05")
-	} else if name == "ISOSpeedRatings" {
-		w.p.Iso, _ = tag.Int(0)
-	} else if name == "ExposureTime" {
-		if value, err := tag.Rat(0); err == nil {
-			w.p.ExposureTime = toString(value)
-		}
-	} else if name == "PixelXDimension" {
-		w.p.XDimension, _ = tag.Int(0)
-	} else if name == "PixelYDimension" {
-		w.p.YDimension, _ = tag.Int(0)
-	} else if name == "Model" {
-		value, _ := tag.StringVal()
-		w.p.Model = strings.Trim(value, " ")
-	} else if name == "FNumber" {
-		if ratValue, err := tag.Rat(0); err == nil {
-			floatValue, _ := ratValue.Float32()
-			w.p.FNumber = fmt.Sprintf("f/%s", strconv.FormatFloat(float64(floatValue), 'f', -1, 32))
-		}
-	}
-	return nil
-}
-
-func toString(rat *big.Rat) string {
-	return fmt.Sprintf("%d/%d", rat.Num(), rat.Denom())
-}
-
-func (s *PhotoService) deleteImage(ctx context.Context, imagePath string) {
-	if err := s.r.Delete(ctx, imagePath); err != nil {
-		log.Fatalf("Can't delete photo with path '%s' (%v)\n", imagePath, err)
-	}
 }

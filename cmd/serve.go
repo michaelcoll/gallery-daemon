@@ -17,6 +17,7 @@
 package cmd
 
 import (
+	"context"
 	"github.com/spf13/cobra"
 
 	"github.com/michaelcoll/gallery-daemon/internal/photo"
@@ -26,8 +27,15 @@ import (
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "Starts the server",
-	Long:  ``,
+	Short: "",
+	Long: `
+Starts the daemon in server mode.
+
+In this mode it will :
+ - index the images if the database is not up-to-date
+ - register the daemon to the backend
+ - watch for file changes
+ - serve backend requests`,
 	Run: func(cmd *cobra.Command, args []string) {
 		module := photo.NewForServe(localDb, folder, model.ServeParameters{
 			GrpcPort:      grpcPort,
@@ -36,7 +44,22 @@ var serveCmd = &cobra.Command{
 			DaemonVersion: Version,
 		})
 
+		// Indexation
+		photoService := module.GetPhotoService()
+		if reIndex {
+			photoService.ReIndex(context.Background(), folder)
+		} else {
+			photoService.Index(context.Background(), folder)
+		}
+		photoService.CloseDb()
+
+		// Registration
 		go module.GetRegisterService().Register()
+
+		// Watch for file changes
+		go photoService.Watch(folder)
+
+		// Serving backend requests
 		module.GetController().Serve()
 	},
 }
@@ -44,11 +67,13 @@ var serveCmd = &cobra.Command{
 var grpcPort int32
 var externalHost string
 var name string
+var reIndex bool
 
 func init() {
 	serveCmd.Flags().Int32VarP(&grpcPort, "port", "p", 9000, "Grpc Port")
 	serveCmd.Flags().StringVarP(&externalHost, "external-host", "H", "localhost", "External host")
 	serveCmd.Flags().StringVarP(&name, "name", "n", "localhost-daemon", "Daemon name")
+	serveCmd.Flags().BoolVar(&reIndex, "re-index", false, "Launch a full re-indexation")
 
 	rootCmd.AddCommand(serveCmd)
 }

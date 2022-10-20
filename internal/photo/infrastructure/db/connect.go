@@ -41,7 +41,7 @@ func getDBUrl(readOnly bool, baseLocation string) string {
 
 	var options string
 	if readOnly {
-		options = "cache=shared&mode=ro&_auto_vacuum=full&_journal_mode=WAL"
+		options = "cache=shared&mode=ro"
 	} else {
 		options = "cache=shared&mode=rwc&_auto_vacuum=full&_journal_mode=WAL"
 	}

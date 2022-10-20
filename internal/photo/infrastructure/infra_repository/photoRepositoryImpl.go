@@ -54,10 +54,9 @@ func New(localDb bool, photosPath string) *PhotoDBRepository {
 	}
 
 	connection := db.Connect(false, databaseLocation)
-	defer connection.Close()
 	db.New(connection).Migrate()
 
-	return &PhotoDBRepository{databaseLocation: databaseLocation, q: sqlc.New()}
+	return &PhotoDBRepository{databaseLocation: databaseLocation, q: sqlc.New(), c: connection}
 }
 
 func (r *PhotoDBRepository) Connect(readOnly bool) {
@@ -184,4 +183,22 @@ func (r *PhotoDBRepository) Delete(ctx context.Context, path string) error {
 	}
 
 	return nil
+}
+
+func (r *PhotoDBRepository) DeleteAll(ctx context.Context) error {
+	err := r.q.DeleteAllPhotos(ctx, r.c)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *PhotoDBRepository) CountPhotos(ctx context.Context) (int, error) {
+	count, err := r.q.CountPhotos(ctx, r.c)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(count), nil
 }

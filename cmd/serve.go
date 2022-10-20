@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"context"
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/banner"
 	"github.com/spf13/cobra"
 
 	"github.com/michaelcoll/gallery-daemon/internal/photo"
@@ -37,6 +38,8 @@ In this mode it will :
  - watch for file changes
  - serve backend requests`,
 	Run: func(cmd *cobra.Command, args []string) {
+		banner.Print(rootCmd.Version, banner.Serve)
+
 		module := photo.NewForServe(localDb, folder, model.ServeParameters{
 			GrpcPort:      grpcPort,
 			ExternalHost:  externalHost,

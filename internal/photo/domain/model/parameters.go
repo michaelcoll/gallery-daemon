@@ -21,4 +21,5 @@ type ServeParameters struct {
 	ExternalHost  string
 	DaemonName    string
 	DaemonVersion string
+	DaemonOwner   string
 }

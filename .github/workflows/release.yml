@@ -28,5 +28,5 @@ jobs:
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
           binary_name: "gallery-daemon"
-          ldflags: -X "github.com/michaelcoll/gallery-daemon/cmd.Version=${{ env.APP_VERSION }}" -w -s
+          ldflags: -X "github.com/michaelcoll/gallery-daemon/cmd.version=${{ env.APP_VERSION }}" -w -s
           executable_compression: upx

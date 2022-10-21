@@ -29,7 +29,7 @@ const (
    ______
   /\_____\
   \ \__/_/_
-  /\ \_____\  %s %s
+  /\ \_____\  %s %s %s
   \ \/ / / /     -= %s =-
    \/_/\/ /
       \/_/
@@ -40,7 +40,7 @@ const (
 	Index      = 1
 )
 
-func Print(version string, mode Mode) {
+func Print(version string, owner string, mode Mode) {
 	var modeStr string
 
 	switch mode {
@@ -50,5 +50,17 @@ func Print(version string, mode Mode) {
 		modeStr = "index mode"
 	}
 
-	fmt.Printf(banner, color.BlueString("gallery daemon"), color.WhiteString(version), color.CyanString(modeStr))
+	var ownerStr string
+	if owner != "" {
+		ownerStr = fmt.Sprintf("%s%s%s",
+			color.WhiteString("["),
+			color.HiWhiteString(owner),
+			color.WhiteString("]"))
+	}
+
+	fmt.Printf(banner,
+		color.BlueString("gallery daemon"),
+		color.WhiteString(version),
+		ownerStr,
+		color.CyanString(modeStr))
 }

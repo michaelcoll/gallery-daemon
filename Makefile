@@ -2,7 +2,7 @@ build:
 	go build -v .
 
 build-prod:
-	go build -v -ldflags="-s -w -X 'github.com/michaelcoll/gallery-daemon/cmd.Version=v0.0.0'" .
+	go build -v -ldflags="-s -w -X 'github.com/michaelcoll/gallery-daemon/cmd.version=v0.0.0'" .
 
 .PHONY: test
 test:

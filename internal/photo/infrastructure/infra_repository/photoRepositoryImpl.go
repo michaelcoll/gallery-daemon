@@ -21,6 +21,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/consts"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -178,6 +179,15 @@ func detectContentType(photoPath string) (string, error) {
 
 func (r *PhotoDBRepository) Delete(ctx context.Context, path string) error {
 	err := r.q.DeletePhotoByPath(ctx, r.c, path)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *PhotoDBRepository) DeleteAllPhotoInPath(ctx context.Context, path string) error {
+	err := r.q.DeleteAllPhotoInPath(ctx, r.c, fmt.Sprintf("'%s%%'", strings.ReplaceAll(path, r.databaseLocation, "")))
 	if err != nil {
 		return err
 	}

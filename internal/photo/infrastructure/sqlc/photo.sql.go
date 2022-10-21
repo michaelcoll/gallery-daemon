@@ -67,6 +67,16 @@ func (q *Queries) CreateOrReplacePhoto(ctx context.Context, db DBTX, arg CreateO
 	return err
 }
 
+const deleteAllPhotoInPath = `-- name: DeleteAllPhotoInPath :exec
+DELETE FROM photos
+WHERE path LIKE ?
+`
+
+func (q *Queries) DeleteAllPhotoInPath(ctx context.Context, db DBTX, path string) error {
+	_, err := db.ExecContext(ctx, deleteAllPhotoInPath, path)
+	return err
+}
+
 const deleteAllPhotos = `-- name: DeleteAllPhotos :exec
 DELETE FROM photos
 WHERE 1

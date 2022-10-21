@@ -28,24 +28,34 @@ type PhotoService struct {
 	photoPath *string
 
 	r repository.PhotoRepository
+
+	watcherStats *stats
 }
 
 func New(r repository.PhotoRepository) PhotoService {
-	return PhotoService{r: r}
+	return PhotoService{r: r, watcherStats: &stats{}}
 }
 
-func (s *PhotoService) indexImage(ctx context.Context, imagePath string) {
+func (s *PhotoService) indexImage(ctx context.Context, imagePath string) *model.Photo {
 	photo := &model.Photo{Path: imagePath}
 	extractData(photo)
 
 	if err := s.r.CreateOrReplace(ctx, *photo); err != nil {
 		log.Fatalf("Can't insert photo located at '%s' into database (%v)\n", imagePath, err)
 	}
+
+	return photo
 }
 
 func (s *PhotoService) deleteImage(ctx context.Context, imagePath string) {
 	if err := s.r.Delete(ctx, imagePath); err != nil {
 		log.Fatalf("Can't delete photo with path '%s' (%v)\n", imagePath, err)
+	}
+}
+
+func (s *PhotoService) deleteAllImageInPath(ctx context.Context, path string) {
+	if err := s.r.DeleteAllPhotoInPath(ctx, path); err != nil {
+		log.Fatalf("Can't delete all photo in path '%s' (%v)\n", path, err)
 	}
 }
 

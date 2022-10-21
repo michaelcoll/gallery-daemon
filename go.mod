@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/mattn/go-sqlite3 v1.14.15
 	github.com/michaelcoll/gallery-proto v0.4.1
-	github.com/michaelcoll/rfsnotify v0.2.0
+	github.com/michaelcoll/rfsnotify v1.0.0
 	github.com/schollz/progressbar/v3 v3.11.0
 	github.com/spf13/cobra v1.6.0
 	github.com/stretchr/testify v1.8.0

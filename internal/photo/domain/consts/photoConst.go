@@ -29,3 +29,13 @@ var SupportedExtensions = []string{
 	".jpeg",
 	".JPEG",
 }
+
+var IgnoredFiles = []string{
+	DatabaseName,
+	DatabaseName + "-shm",
+	DatabaseName + "-wal",
+}
+
+const (
+	DatabaseName = "photos.db"
+)

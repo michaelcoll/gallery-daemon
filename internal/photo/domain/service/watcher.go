@@ -22,11 +22,18 @@ import (
 	"github.com/fatih/color"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/consts"
 	"log"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 
 	"github.com/michaelcoll/rfsnotify"
 )
+
+type stats struct {
+	inserted      int
+	deleted       int
+	deletedFolder int
+}
 
 func (s *PhotoService) Watch(path string) {
 
@@ -42,6 +49,8 @@ func (s *PhotoService) Watch(path string) {
 	}
 
 	fmt.Printf("%s Watching folder %s \n", color.GreenString("✓"), color.GreenString(path))
+
+	go s.displayStats()
 
 	for {
 		select {
@@ -74,16 +83,52 @@ func isDeleteEvent(event fsnotify.Event) bool {
 }
 
 func (s *PhotoService) handleEvent(event fsnotify.Event) {
-	if !hasExtension(event.Name, consts.SupportedExtensions) {
+	if isIgnoredFile(event.Name, consts.IgnoredFiles) {
 		return
 	}
 
 	s.r.Connect(false)
 	defer s.r.Close()
 
-	if isCreateEvent(event) {
+	if isCreateEvent(event) && hasExtension(event.Name, consts.SupportedExtensions) {
 		s.indexImage(context.Background(), event.Name)
-	} else if isDeleteEvent(event) {
+		s.watcherStats.inserted++
+	} else if isDeleteEvent(event) && hasExtension(event.Name, consts.SupportedExtensions) {
 		s.deleteImage(context.Background(), event.Name)
+		s.watcherStats.deleted++
+	} else if isDeleteEvent(event) {
+		s.deleteAllImageInPath(context.Background(), event.Name)
+		s.watcherStats.deletedFolder++
+	}
+}
+
+func (s *PhotoService) displayStats() {
+	var inserted, deleted, deletedFolder int
+
+	for {
+		time.Sleep(time.Duration(2) * time.Second)
+		if inserted != s.watcherStats.inserted ||
+			deleted != s.watcherStats.deleted ||
+			deletedFolder != s.watcherStats.deletedFolder {
+
+			deltaInsert := s.watcherStats.inserted - inserted
+			deltaDelete := s.watcherStats.deleted - deleted
+			deltaDeleteFolder := s.watcherStats.deletedFolder - deletedFolder
+
+			if deltaInsert > 0 && deltaDelete > 0 {
+				fmt.Printf("%s Indexed %d image(s) and deleted %d image(s)\n", color.GreenString("!"), deltaInsert, deltaDelete)
+			} else if deltaInsert > 0 {
+				fmt.Printf("%s Indexed %d image(s)\n", color.GreenString("!"), deltaInsert)
+			} else if deltaDelete > 0 {
+				fmt.Printf("%s Deleted %d image(s)\n", color.GreenString("!"), deltaDelete)
+			}
+			if deltaDeleteFolder > 0 {
+				fmt.Printf("%s Deleted %d folder(s)\n", color.GreenString("!"), deltaDeleteFolder)
+			}
+
+			inserted = s.watcherStats.inserted
+			deleted = s.watcherStats.deleted
+			deletedFolder = s.watcherStats.deletedFolder
+		}
 	}
 }

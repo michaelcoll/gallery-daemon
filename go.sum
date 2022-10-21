@@ -32,8 +32,8 @@ github.com/mattn/go-sqlite3 v1.14.15 h1:vfoHhTN1af61xCRSWzFIWzx2YskyMTwHLrExkBOj
 github.com/mattn/go-sqlite3 v1.14.15/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
 github.com/michaelcoll/gallery-proto v0.4.1 h1:aCZNloCoqKIpc6v+8Q6DndygWaXrB8XcrmYVad85BOA=
 github.com/michaelcoll/gallery-proto v0.4.1/go.mod h1:u+8HDPcdiLSkZgArkWvFTD3fsGI7sddH6iZRH0An0aE=
-github.com/michaelcoll/rfsnotify v0.2.0 h1:1lytWfntHjMED5/rDZSFajUZhwMgFNrteXiYWAv15gQ=
-github.com/michaelcoll/rfsnotify v0.2.0/go.mod h1:LiPVjEwiKIX0/iYVScgIdyksskydqP6AMemOiQDe5zE=
+github.com/michaelcoll/rfsnotify v1.0.0 h1:9Dmd3KIHLn46+FtU6cUvAWiTQuxPWrXOtAgiAMFt7xo=
+github.com/michaelcoll/rfsnotify v1.0.0/go.mod h1:LiPVjEwiKIX0/iYVScgIdyksskydqP6AMemOiQDe5zE=
 github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db h1:62I3jR2EmQ4l5rM/4FEfDWcRD+abF5XlKShorW5LRoQ=
 github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db/go.mod h1:l0dey0ia/Uv7NcFFVbCLtqEBQbrT4OCwCSKTEv6enCw=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

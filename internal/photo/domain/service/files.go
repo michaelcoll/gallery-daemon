@@ -64,8 +64,18 @@ func hasExtension(filename string, extensions []string) bool {
 func absPath(path string) *string {
 	absPath, err := filepath.Abs(path)
 	if err != nil {
-		log.Fatalf("Can't determine the absolute path '%s' (%v)\n", path, err)
+		log.Fatalf("Can't determine the absolute path of '%s' (%v)\n", path, err)
 	}
 
 	return &absPath
+}
+
+func isIgnoredFile(path string, ignoredFiles []string) bool {
+	for _, ignoredFile := range ignoredFiles {
+		if strings.HasSuffix(path, ignoredFile) {
+			return true
+		}
+	}
+
+	return false
 }

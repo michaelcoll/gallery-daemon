@@ -22,10 +22,8 @@ import (
 	"log"
 
 	_ "github.com/mattn/go-sqlite3"
-)
 
-const (
-	databaseName = "photos.db"
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/consts"
 )
 
 func Connect(readOnly bool, baseLocation string) *sql.DB {
@@ -46,5 +44,5 @@ func getDBUrl(readOnly bool, baseLocation string) string {
 		options = "cache=shared&mode=rwc&_auto_vacuum=full&_journal_mode=WAL"
 	}
 
-	return fmt.Sprintf("file:%s/%s?%s", baseLocation, databaseName, options)
+	return fmt.Sprintf("file:%s/%s?%s", baseLocation, consts.DatabaseName, options)
 }

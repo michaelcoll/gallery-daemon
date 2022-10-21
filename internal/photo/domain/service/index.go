@@ -62,14 +62,17 @@ func (s *PhotoService) ReIndex(ctx context.Context, path string) {
 	_ = bar.Clear()
 
 	bar = progressbar.Default(-1, "Searching all the images... ")
+	var indexedImages []*model.Photo
 	// Find images in the folder
 	for _, imagePath := range findFiles(*s.photoPath, false, consts.SupportedExtensions) {
-		s.indexImage(ctx, imagePath)
+		indexedImages = append(indexedImages, s.indexImage(ctx, imagePath))
 		_ = bar.Add(1)
 	}
 	_ = bar.Clear()
 
 	fmt.Printf("%s Done. \n", color.GreenString("✓"))
+
+	printIndexationStats(indexedImages)
 }
 
 func extractData(photo *model.Photo) {
@@ -100,4 +103,31 @@ func sha(path string) (string, error) {
 	}
 
 	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+func printIndexationStats(indexedImages []*model.Photo) {
+	var mapIndexedImages = make(map[string][]string)
+
+	for _, image := range indexedImages {
+		paths, exists := mapIndexedImages[image.Hash]
+		if exists {
+			paths = append(paths, image.Path)
+			mapIndexedImages[image.Hash] = paths
+		} else {
+			mapIndexedImages[image.Hash] = []string{image.Path}
+		}
+	}
+
+	for _, paths := range mapIndexedImages {
+		if len(paths) > 1 {
+			fmt.Println("Duplicated images detected :")
+			for i, path := range paths {
+				if i == len(paths)-1 {
+					fmt.Printf(" using => %s\n", path)
+				} else {
+					fmt.Printf("          %s\n", path)
+				}
+			}
+		}
+	}
 }

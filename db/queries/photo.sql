@@ -24,6 +24,10 @@ FROM photos;
 DELETE FROM photos
 WHERE path = ?;
 
+-- name: DeleteAllPhotoInPath :exec
+DELETE FROM photos
+WHERE path LIKE ?;
+
 -- name: DeleteAllPhotos :exec
 DELETE FROM photos
 WHERE 1

@@ -39,6 +39,7 @@ Flags:
   -H, --external-host string   External host (default "localhost")
   -h, --help                   help for serve
   -n, --name string            Daemon name (default "localhost-daemon")
+  -o, --owner string           Daemon owner email (default "no@name.com")
   -p, --port int32             Grpc Port (default 9000)
       --re-index               Launch a full re-indexation
 
@@ -50,9 +51,16 @@ Global Flags:
 
 # Exemple
 ```
-$ ./gallery-daemon serve -p 9001 -f ~/Images/Photos
-✓ Re-indexing folder /home/spyder/Images/Photos
-✓ Done.
+$ ./gallery-daemon serve -p 9001 -o owner@mail.com -f ~/Images/Photos
+   ______
+  /\_____\
+  \ \__/_/_
+  /\ \_____\  gallery daemon v0.0.0 [owner@mail.com]
+  \ \/ / / /     -= serve mode =-
+   \/_/\/ /
+      \/_/
+
+✓ Up-to-date.
 ✓ Listening on 0.0.0.0:9001
 ✓ Daemon registered.
 ✓ Watching folder /home/spyder/Images/Photos

@@ -56,6 +56,7 @@ func (c *RegisterGrpcCaller) Register() (*model.RegisterResponse, error) {
 		DaemonHost:    c.param.ExternalHost,
 		DaemonPort:    c.param.GrpcPort,
 		DaemonVersion: c.param.DaemonVersion,
+		DaemonOwner:   c.param.DaemonOwner,
 	})
 	if err != nil {
 		return nil, err

@@ -33,7 +33,7 @@ Starts the daemon in index mode only.
 
 Indexes the given folder and create a database file.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		banner.Print(rootCmd.Version, banner.Index)
+		banner.Print(rootCmd.Version, "", banner.Index)
 
 		service := photo.NewForIndex(localDb, folder).GetPhotoService()
 		defer service.CloseDb()

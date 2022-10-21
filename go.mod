@@ -1,6 +1,6 @@
 module github.com/michaelcoll/gallery-daemon
 
-go 1.18
+go 1.19
 
 require (
 	github.com/cozy/goexif2 v0.0.0-20200819113101-00e1cc8cc9d3
@@ -8,7 +8,7 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/mattn/go-sqlite3 v1.14.15
-	github.com/michaelcoll/gallery-proto v0.4.1
+	github.com/michaelcoll/gallery-proto v0.5.1
 	github.com/michaelcoll/rfsnotify v1.0.0
 	github.com/schollz/progressbar/v3 v3.11.0
 	github.com/spf13/cobra v1.6.0

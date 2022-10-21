@@ -18,8 +18,11 @@ package cmd
 
 import (
 	"context"
+	"fmt"
+	"github.com/fatih/color"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/banner"
 	"github.com/spf13/cobra"
+	"regexp"
 
 	"github.com/michaelcoll/gallery-daemon/internal/photo"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
@@ -38,13 +41,19 @@ In this mode it will :
  - watch for file changes
  - serve backend requests`,
 	Run: func(cmd *cobra.Command, args []string) {
-		banner.Print(rootCmd.Version, banner.Serve)
+		if !isEmailValid(owner) {
+			fmt.Printf("%s Invalid owner email : %s\n", color.RedString("✗"), owner)
+			return
+		}
+
+		banner.Print(rootCmd.Version, owner, banner.Serve)
 
 		module := photo.NewForServe(localDb, folder, model.ServeParameters{
 			GrpcPort:      grpcPort,
 			ExternalHost:  externalHost,
 			DaemonName:    name,
-			DaemonVersion: Version,
+			DaemonVersion: version,
+			DaemonOwner:   owner,
 		})
 
 		// Indexation
@@ -70,13 +79,20 @@ In this mode it will :
 var grpcPort int32
 var externalHost string
 var name string
+var owner string
 var reIndex bool
 
 func init() {
 	serveCmd.Flags().Int32VarP(&grpcPort, "port", "p", 9000, "Grpc Port")
 	serveCmd.Flags().StringVarP(&externalHost, "external-host", "H", "localhost", "External host")
 	serveCmd.Flags().StringVarP(&name, "name", "n", "localhost-daemon", "Daemon name")
+	serveCmd.Flags().StringVarP(&owner, "owner", "o", "no@name.com", "Daemon owner email")
 	serveCmd.Flags().BoolVar(&reIndex, "re-index", false, "Launch a full re-indexation")
 
 	rootCmd.AddCommand(serveCmd)
+}
+
+func isEmailValid(e string) bool {
+	emailRegex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
+	return emailRegex.MatchString(e)
 }

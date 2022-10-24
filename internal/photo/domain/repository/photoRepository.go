@@ -36,7 +36,7 @@ type PhotoRepository interface {
 	Get(ctx context.Context, hash string) (model.Photo, error)
 	ReadContent(ctx context.Context, hash string, reader ImageReader) error
 	Exists(ctx context.Context, hash string) bool
-	List(context.Context) ([]model.Photo, error)
+	List(ctx context.Context, page int32, pageSize int32) ([]model.Photo, error)
 	Delete(ctx context.Context, path string) error
 	DeleteAllPhotoInPath(ctx context.Context, path string) error
 	DeleteAll(ctx context.Context) error

@@ -59,12 +59,19 @@ func (c *PhotoController) Serve() {
 }
 
 // GetPhotos returns all photos by given filter
-func (c *PhotoController) GetPhotos(ctx context.Context, _ *photov1.GetPhotosRequest) (*photov1.GetPhotosResponse, error) {
+func (c *PhotoController) GetPhotos(ctx context.Context, request *photov1.GetPhotosRequest) (*photov1.GetPhotosResponse, error) {
 
 	c.r.Connect(true)
 	defer c.r.Close()
 
-	list, err := c.r.List(ctx)
+	var pageSize int32
+	if request.PageSize == 0 {
+		pageSize = 25
+	} else {
+		pageSize = request.PageSize
+	}
+
+	list, err := c.r.List(ctx, request.Page, pageSize)
 	if err != nil {
 		return nil, err
 	}

@@ -86,6 +86,8 @@ func extractData(photo *model.Photo) {
 	if err = extractExif(photo); err != nil {
 		log.Printf("Error while extracting EXIF from file %s : %v\n", photo.Path, err)
 	}
+
+	fixPhotoAttributes(photo)
 }
 
 // sha calculate the SHA256 of a file

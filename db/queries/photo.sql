@@ -19,6 +19,7 @@ FROM photos;
 -- name: List :many
 SELECT *
 FROM photos
+ORDER BY date_time DESC
 LIMIT ? OFFSET ?;
 
 -- name: DeletePhotoByPath :exec

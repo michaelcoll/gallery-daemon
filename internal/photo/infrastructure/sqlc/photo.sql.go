@@ -123,10 +123,16 @@ func (q *Queries) GetPhoto(ctx context.Context, db DBTX, hash string) (Photo, er
 const list = `-- name: List :many
 SELECT hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, f_number
 FROM photos
+LIMIT ? OFFSET ?
 `
 
-func (q *Queries) List(ctx context.Context, db DBTX) ([]Photo, error) {
-	rows, err := db.QueryContext(ctx, list)
+type ListParams struct {
+	Limit  int64 `db:"limit"`
+	Offset int64 `db:"offset"`
+}
+
+func (q *Queries) List(ctx context.Context, db DBTX, arg ListParams) ([]Photo, error) {
+	rows, err := db.QueryContext(ctx, list, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

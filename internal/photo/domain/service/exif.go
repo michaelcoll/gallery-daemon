@@ -19,7 +19,10 @@ package service
 import (
 	"errors"
 	"fmt"
+	"image"
+	_ "image/jpeg"
 	"io"
+	"log"
 	"math/big"
 	"os"
 	"strconv"
@@ -87,4 +90,30 @@ func (w *walker) Walk(name exif.FieldName, tag *tiff.Tag) error {
 
 func toString(rat *big.Rat) string {
 	return fmt.Sprintf("%d/%d", rat.Num(), rat.Denom())
+}
+
+func fixPhotoAttributes(photo *model.Photo) {
+	if photo.XDimension == 0 || photo.YDimension == 0 {
+		reader, err := os.Open(photo.Path)
+		if err != nil {
+			log.Printf("Can't open file %s : %v\n", photo.Path, err)
+		}
+		defer reader.Close()
+
+		im, _, err := image.DecodeConfig(reader)
+		if err != nil {
+			log.Printf("Can't read image %s : %v\n", photo.Path, err)
+		}
+
+		photo.XDimension = im.Width
+		photo.YDimension = im.Height
+	}
+	if photo.DateTime == "" {
+		file, err := os.Stat(photo.Path)
+		if err != nil {
+			log.Printf("Can't open file %s : %v\n", photo.Path, err)
+		}
+
+		photo.DateTime = file.ModTime().Format("2006-01-02T15:04:05")
+	}
 }

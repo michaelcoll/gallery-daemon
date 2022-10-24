@@ -59,7 +59,7 @@ func (r *PhotoDBRepository) toDomain(photo sqlc.Photo) (model.Photo, error) {
 
 	m := &model.Photo{
 		Hash: photo.Hash,
-		Path: r.databaseLocation + photo.Path,
+		Path: photo.Path,
 	}
 
 	if photo.DateTime.Valid {

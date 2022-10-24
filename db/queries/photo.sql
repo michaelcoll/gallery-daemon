@@ -18,7 +18,8 @@ FROM photos;
 
 -- name: List :many
 SELECT *
-FROM photos;
+FROM photos
+LIMIT ? OFFSET ?;
 
 -- name: DeletePhotoByPath :exec
 DELETE FROM photos

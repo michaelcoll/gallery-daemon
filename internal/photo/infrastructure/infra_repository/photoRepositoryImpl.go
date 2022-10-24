@@ -106,8 +106,11 @@ func (r *PhotoDBRepository) Exists(ctx context.Context, hash string) bool {
 	return count == 1
 }
 
-func (r *PhotoDBRepository) List(ctx context.Context) ([]model.Photo, error) {
-	list, err := r.q.List(ctx, r.c)
+func (r *PhotoDBRepository) List(ctx context.Context, page int32, pageSize int32) ([]model.Photo, error) {
+	list, err := r.q.List(ctx, r.c, sqlc.ListParams{
+		Limit:  int64(pageSize),
+		Offset: int64(page * pageSize),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +141,7 @@ func (r *PhotoDBRepository) ReadContent(ctx context.Context, hash string, reader
 		return err
 	}
 
-	f, err := os.Open(photo.Path)
+	f, err := os.Open(fmt.Sprintf("%s%s", r.databaseLocation, photo.Path))
 	if err != nil {
 		return err
 	}

@@ -8,7 +8,7 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/mattn/go-sqlite3 v1.14.15
-	github.com/michaelcoll/gallery-proto v0.5.1
+	github.com/michaelcoll/gallery-proto v0.6.0
 	github.com/michaelcoll/rfsnotify v1.0.0
 	github.com/schollz/progressbar/v3 v3.11.0
 	github.com/spf13/cobra v1.6.0
@@ -31,7 +31,7 @@ require (
 	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/term v0.1.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
-	google.golang.org/genproto v0.0.0-20221018160656-63c7b68cfc55 // indirect
+	google.golang.org/genproto v0.0.0-20221024153911-1573dae28c9c // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

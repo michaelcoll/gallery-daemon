@@ -123,6 +123,7 @@ func (q *Queries) GetPhoto(ctx context.Context, db DBTX, hash string) (Photo, er
 const list = `-- name: List :many
 SELECT hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, f_number
 FROM photos
+ORDER BY date_time DESC
 LIMIT ? OFFSET ?
 `
 

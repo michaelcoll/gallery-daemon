@@ -11,7 +11,7 @@ require (
 	github.com/michaelcoll/gallery-proto v0.6.0
 	github.com/michaelcoll/rfsnotify v1.0.0
 	github.com/schollz/progressbar/v3 v3.11.0
-	github.com/spf13/cobra v1.6.0
+	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
 	google.golang.org/grpc v1.50.1
 )

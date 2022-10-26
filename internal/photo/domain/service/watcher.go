@@ -22,6 +22,10 @@ import (
 	"github.com/fatih/color"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/consts"
 	"log"
+	"os"
+	"os/signal"
+	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -30,12 +34,15 @@ import (
 )
 
 type stats struct {
-	inserted      int
-	deleted       int
-	deletedFolder int
+	inserted      atomic.Int64
+	deleted       atomic.Int64
+	deletedFolder atomic.Int64
 }
 
 func (s *PhotoService) Watch(path string) {
+
+	s.r.Connect(false)
+	defer s.r.Close()
 
 	watcher, err := rfsnotify.NewBufferedWatcher(2000)
 	if err != nil {
@@ -52,15 +59,23 @@ func (s *PhotoService) Watch(path string) {
 
 	go s.displayStats()
 
+	quit := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+
 	for {
 		select {
+		case <-quit:
+			fmt.Printf("%s Stoping watcher ...\n", color.RedString("!"))
+			s.r.Close()
+			os.Exit(1)
+
 		case event, ok := <-watcher.Events:
 			if !ok {
 				return
 			}
 
 			if isCreateEvent(event) || isDeleteEvent(event) {
-				s.handleEvent(event)
+				go s.handleEvent(event)
 			}
 
 		case err, ok := <-watcher.Errors:
@@ -87,33 +102,30 @@ func (s *PhotoService) handleEvent(event fsnotify.Event) {
 		return
 	}
 
-	s.r.Connect(false)
-	defer s.r.Close()
-
 	if isCreateEvent(event) && hasExtension(event.Name, consts.SupportedExtensions) {
 		s.indexImage(context.Background(), event.Name)
-		s.watcherStats.inserted++
+		s.watcherStats.inserted.Add(1)
 	} else if isDeleteEvent(event) && hasExtension(event.Name, consts.SupportedExtensions) {
 		s.deleteImage(context.Background(), event.Name)
-		s.watcherStats.deleted++
+		s.watcherStats.deleted.Add(1)
 	} else if isDeleteEvent(event) {
 		s.deleteAllImageInPath(context.Background(), event.Name)
-		s.watcherStats.deletedFolder++
+		s.watcherStats.deletedFolder.Add(1)
 	}
 }
 
 func (s *PhotoService) displayStats() {
-	var inserted, deleted, deletedFolder int
+	var inserted, deleted, deletedFolder int64
 
 	for {
 		time.Sleep(time.Duration(2) * time.Second)
-		if inserted != s.watcherStats.inserted ||
-			deleted != s.watcherStats.deleted ||
-			deletedFolder != s.watcherStats.deletedFolder {
+		if inserted != s.watcherStats.inserted.Load() ||
+			deleted != s.watcherStats.deleted.Load() ||
+			deletedFolder != s.watcherStats.deletedFolder.Load() {
 
-			deltaInsert := s.watcherStats.inserted - inserted
-			deltaDelete := s.watcherStats.deleted - deleted
-			deltaDeleteFolder := s.watcherStats.deletedFolder - deletedFolder
+			deltaInsert := s.watcherStats.inserted.Load() - inserted
+			deltaDelete := s.watcherStats.deleted.Load() - deleted
+			deltaDeleteFolder := s.watcherStats.deletedFolder.Load() - deletedFolder
 
 			if deltaInsert > 0 && deltaDelete > 0 {
 				fmt.Printf("%s Indexed %d image(s) and deleted %d image(s)\n", color.GreenString("!"), deltaInsert, deltaDelete)
@@ -126,9 +138,9 @@ func (s *PhotoService) displayStats() {
 				fmt.Printf("%s Deleted %d folder(s)\n", color.GreenString("!"), deltaDeleteFolder)
 			}
 
-			inserted = s.watcherStats.inserted
-			deleted = s.watcherStats.deleted
-			deletedFolder = s.watcherStats.deletedFolder
+			inserted = s.watcherStats.inserted.Load()
+			deleted = s.watcherStats.deleted.Load()
+			deletedFolder = s.watcherStats.deletedFolder.Load()
 		}
 	}
 }

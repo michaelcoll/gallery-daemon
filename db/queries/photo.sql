@@ -1,6 +1,16 @@
 -- name: GetPhoto :one
-SELECT *
+SELECT hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, f_number
 FROM photos
+WHERE hash = ?;
+
+-- name: GetThumbnail :one
+SELECT thumbnail
+FROM photos
+WHERE hash = ?;
+
+-- name: UpdateThumbnail :exec
+UPDATE photos
+SET thumbnail = ?
 WHERE hash = ?;
 
 -- name: CreateOrReplacePhoto :exec
@@ -17,7 +27,7 @@ SELECT COUNT(*)
 FROM photos;
 
 -- name: List :many
-SELECT *
+SELECT hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, f_number
 FROM photos
 ORDER BY date_time DESC
 LIMIT ? OFFSET ?;

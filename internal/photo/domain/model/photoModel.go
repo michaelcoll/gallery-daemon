@@ -20,8 +20,9 @@ type Photo struct {
 
 	// Main
 
-	Hash string
-	Path string
+	Hash      string
+	Path      string
+	Thumbnail []byte
 
 	// EXIF
 

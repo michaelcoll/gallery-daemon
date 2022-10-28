@@ -103,9 +103,21 @@ FROM photos
 WHERE hash = ?
 `
 
-func (q *Queries) GetPhoto(ctx context.Context, db DBTX, hash string) (Photo, error) {
+type GetPhotoRow struct {
+	Hash         string         `db:"hash"`
+	Path         string         `db:"path"`
+	DateTime     sql.NullString `db:"date_time"`
+	Iso          sql.NullInt64  `db:"iso"`
+	ExposureTime sql.NullString `db:"exposure_time"`
+	XDimension   sql.NullInt64  `db:"x_dimension"`
+	YDimension   sql.NullInt64  `db:"y_dimension"`
+	Model        sql.NullString `db:"model"`
+	FNumber      sql.NullString `db:"f_number"`
+}
+
+func (q *Queries) GetPhoto(ctx context.Context, db DBTX, hash string) (GetPhotoRow, error) {
 	row := db.QueryRowContext(ctx, getPhoto, hash)
-	var i Photo
+	var i GetPhotoRow
 	err := row.Scan(
 		&i.Hash,
 		&i.Path,
@@ -120,6 +132,19 @@ func (q *Queries) GetPhoto(ctx context.Context, db DBTX, hash string) (Photo, er
 	return i, err
 }
 
+const getThumbnail = `-- name: GetThumbnail :one
+SELECT thumbnail
+FROM photos
+WHERE hash = ?
+`
+
+func (q *Queries) GetThumbnail(ctx context.Context, db DBTX, hash string) ([]byte, error) {
+	row := db.QueryRowContext(ctx, getThumbnail, hash)
+	var thumbnail []byte
+	err := row.Scan(&thumbnail)
+	return thumbnail, err
+}
+
 const list = `-- name: List :many
 SELECT hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, f_number
 FROM photos
@@ -132,15 +157,27 @@ type ListParams struct {
 	Offset int64 `db:"offset"`
 }
 
-func (q *Queries) List(ctx context.Context, db DBTX, arg ListParams) ([]Photo, error) {
+type ListRow struct {
+	Hash         string         `db:"hash"`
+	Path         string         `db:"path"`
+	DateTime     sql.NullString `db:"date_time"`
+	Iso          sql.NullInt64  `db:"iso"`
+	ExposureTime sql.NullString `db:"exposure_time"`
+	XDimension   sql.NullInt64  `db:"x_dimension"`
+	YDimension   sql.NullInt64  `db:"y_dimension"`
+	Model        sql.NullString `db:"model"`
+	FNumber      sql.NullString `db:"f_number"`
+}
+
+func (q *Queries) List(ctx context.Context, db DBTX, arg ListParams) ([]ListRow, error) {
 	rows, err := db.QueryContext(ctx, list, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Photo{}
+	items := []ListRow{}
 	for rows.Next() {
-		var i Photo
+		var i ListRow
 		if err := rows.Scan(
 			&i.Hash,
 			&i.Path,
@@ -163,4 +200,20 @@ func (q *Queries) List(ctx context.Context, db DBTX, arg ListParams) ([]Photo, e
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateThumbnail = `-- name: UpdateThumbnail :exec
+UPDATE photos
+SET thumbnail = ?
+WHERE hash = ?
+`
+
+type UpdateThumbnailParams struct {
+	Thumbnail []byte `db:"thumbnail"`
+	Hash      string `db:"hash"`
+}
+
+func (q *Queries) UpdateThumbnail(ctx context.Context, db DBTX, arg UpdateThumbnailParams) error {
+	_, err := db.ExecContext(ctx, updateThumbnail, arg.Thumbnail, arg.Hash)
+	return err
 }

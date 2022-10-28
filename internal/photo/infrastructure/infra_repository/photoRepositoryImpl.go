@@ -22,13 +22,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/consts"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"io"
 	"os"
 	"strings"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/consts"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/repository"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/infrastructure/db"
@@ -36,6 +37,7 @@ import (
 )
 
 const BufferSize = 1024 * 1024 * 2
+const webPContentType = "image/webp"
 
 type PhotoDBRepository struct {
 	repository.PhotoRepository
@@ -89,7 +91,7 @@ func (r *PhotoDBRepository) Get(ctx context.Context, hash string) (model.Photo, 
 	if err != nil {
 		return model.Photo{}, err
 	}
-	domain, err := r.toDomain(photo)
+	domain, err := r.toDomainGet(photo)
 	if err != nil {
 		return model.Photo{}, err
 	}
@@ -117,7 +119,7 @@ func (r *PhotoDBRepository) List(ctx context.Context, page int32, pageSize int32
 
 	photos := make([]model.Photo, len(list))
 	for i, photo := range list {
-		domain, err := r.toDomain(photo)
+		domain, err := r.toDomainList(photo)
 		if err != nil {
 			return nil, err
 		}
@@ -165,6 +167,33 @@ func (r *PhotoDBRepository) ReadContent(ctx context.Context, hash string, reader
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (r *PhotoDBRepository) ReadThumbnail(ctx context.Context, hash string, reader repository.ImageReader) error {
+	thumbnailBytes, err := r.q.GetThumbnail(ctx, r.c, hash)
+	if err == sql.ErrNoRows {
+		return status.Error(codes.NotFound, "media not found")
+	}
+	if err != nil {
+		return err
+	}
+
+	if err = reader.ReadChunk(thumbnailBytes, webPContentType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *PhotoDBRepository) SetThumbnail(ctx context.Context, hash string, thumbnail []byte) error {
+	if err := r.q.UpdateThumbnail(ctx, r.c, sqlc.UpdateThumbnailParams{
+		Thumbnail: thumbnail,
+		Hash:      hash,
+	}); err != nil {
+		return err
 	}
 
 	return nil

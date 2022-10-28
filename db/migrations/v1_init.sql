@@ -8,5 +8,6 @@ CREATE TABLE photos
     x_dimension   INTEGER,
     y_dimension   INTEGER,
     model         TEXT,
-    f_number      TEXT
+    f_number      TEXT,
+    thumbnail     BLOB
 );

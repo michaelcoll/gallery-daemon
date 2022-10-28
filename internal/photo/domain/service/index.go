@@ -24,6 +24,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"sync"
 
 	"github.com/fatih/color"
 	"github.com/schollz/progressbar/v3"
@@ -64,8 +65,10 @@ func (s *PhotoService) ReIndex(ctx context.Context, path string) {
 	bar = progressbar.Default(-1, "Searching all the images... ")
 	var indexedImages []*model.Photo
 	// Find images in the folder
+	var wg sync.WaitGroup
 	for _, imagePath := range findFiles(*s.photoPath, false, consts.SupportedExtensions) {
-		indexedImages = append(indexedImages, s.indexImage(ctx, imagePath))
+		wg.Add(1)
+		indexedImages = append(indexedImages, s.indexImage(ctx, imagePath, &wg))
 		_ = bar.Add(1)
 	}
 	_ = bar.Clear()
@@ -73,6 +76,10 @@ func (s *PhotoService) ReIndex(ctx context.Context, path string) {
 	fmt.Printf("%s Done. \n", color.GreenString("✓"))
 
 	printIndexationStats(indexedImages)
+
+	bar = progressbar.Default(-1, "Updating all the image thumbnails... ")
+	wg.Wait()
+	_ = bar.Clear()
 }
 
 func extractData(photo *model.Photo) {

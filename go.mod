@@ -3,13 +3,15 @@ module github.com/michaelcoll/gallery-daemon
 go 1.19
 
 require (
+	github.com/chai2010/webp v1.1.1
 	github.com/cozy/goexif2 v0.0.0-20200819113101-00e1cc8cc9d3
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/mattn/go-sqlite3 v1.14.16
-	github.com/michaelcoll/gallery-proto v0.6.0
+	github.com/michaelcoll/gallery-proto v0.7.0
 	github.com/michaelcoll/rfsnotify v1.0.0
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/schollz/progressbar/v3 v3.11.0
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
@@ -31,7 +33,7 @@ require (
 	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/term v0.1.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
-	google.golang.org/genproto v0.0.0-20221024183307-1bc688fe9f3e // indirect
+	google.golang.org/genproto v0.0.0-20221027153422-115e99e71e1c // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

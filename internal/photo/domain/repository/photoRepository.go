@@ -35,6 +35,8 @@ type PhotoRepository interface {
 	CreateOrReplace(context.Context, model.Photo) error
 	Get(ctx context.Context, hash string) (model.Photo, error)
 	ReadContent(ctx context.Context, hash string, reader ImageReader) error
+	ReadThumbnail(ctx context.Context, hash string, reader ImageReader) error
+	SetThumbnail(ctx context.Context, hash string, thumbnail []byte) error
 	Exists(ctx context.Context, hash string) bool
 	List(ctx context.Context, page int32, pageSize int32) ([]model.Photo, error)
 	Delete(ctx context.Context, path string) error

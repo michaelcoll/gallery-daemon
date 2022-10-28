@@ -17,9 +17,10 @@
 package infra_repository
 
 import (
+	"strings"
+
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/infrastructure/sqlc"
-	"strings"
 )
 
 func (r *PhotoDBRepository) toInfra(photo model.Photo) (sqlc.CreateOrReplacePhotoParams, error) {
@@ -85,4 +86,34 @@ func (r *PhotoDBRepository) toDomain(photo sqlc.Photo) (model.Photo, error) {
 	}
 
 	return *m, nil
+}
+
+func (r *PhotoDBRepository) toDomainGet(photo sqlc.GetPhotoRow) (model.Photo, error) {
+	return r.toDomain(sqlc.Photo{
+		Hash: photo.Hash,
+		Path: photo.Path,
+
+		DateTime:     photo.DateTime,
+		Iso:          photo.Iso,
+		ExposureTime: photo.ExposureTime,
+		XDimension:   photo.XDimension,
+		YDimension:   photo.YDimension,
+		Model:        photo.Model,
+		FNumber:      photo.FNumber,
+	})
+}
+
+func (r *PhotoDBRepository) toDomainList(photo sqlc.ListRow) (model.Photo, error) {
+	return r.toDomain(sqlc.Photo{
+		Hash: photo.Hash,
+		Path: photo.Path,
+
+		DateTime:     photo.DateTime,
+		Iso:          photo.Iso,
+		ExposureTime: photo.ExposureTime,
+		XDimension:   photo.XDimension,
+		YDimension:   photo.YDimension,
+		Model:        photo.Model,
+		FNumber:      photo.FNumber,
+	})
 }

@@ -115,7 +115,20 @@ func (c *PhotoController) ContentByHash(filter *photov1.ContentByHashRequest, st
 	c.r.Connect(true)
 	defer c.r.Close()
 
-	err := c.r.ReadContent(stream.Context(), filter.Hash, streamReader{stream: stream})
+	err := c.r.ReadContent(stream.Context(), filter.Hash, &streamReader{stream: stream})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *PhotoController) ThumbnailByHash(filter *photov1.ThumbnailByHashRequest, stream photov1.PhotoService_ThumbnailByHashServer) error {
+
+	c.r.Connect(true)
+	defer c.r.Close()
+
+	err := c.r.ReadThumbnail(stream.Context(), filter.Hash, &streamReaderThumbnail{stream: stream})
 	if err != nil {
 		return err
 	}
@@ -127,8 +140,24 @@ type streamReader struct {
 	stream photov1.PhotoService_ContentByHashServer
 }
 
-func (r streamReader) ReadChunk(bytes []byte, contentType string) error {
+func (r *streamReader) ReadChunk(bytes []byte, contentType string) error {
 	err := r.stream.Send(&photov1.PhotoServiceContentByHashResponse{
+		Data:        bytes,
+		ContentType: contentType,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type streamReaderThumbnail struct {
+	stream photov1.PhotoService_ThumbnailByHashServer
+}
+
+func (r *streamReaderThumbnail) ReadChunk(bytes []byte, contentType string) error {
+	err := r.stream.Send(&photov1.PhotoServiceThumbnailByHashResponse{
 		Data:        bytes,
 		ContentType: contentType,
 	})

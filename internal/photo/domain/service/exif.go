@@ -84,6 +84,8 @@ func (w *walker) Walk(name exif.FieldName, tag *tiff.Tag) error {
 			floatValue, _ := ratValue.Float32()
 			w.p.FNumber = fmt.Sprintf("f/%s", strconv.FormatFloat(float64(floatValue), 'f', -1, 32))
 		}
+	} else if name == "Orientation" {
+		w.p.Orientation, _ = tag.Int(0)
 	}
 	return nil
 }
@@ -115,5 +117,11 @@ func fixPhotoAttributes(photo *model.Photo) {
 		}
 
 		photo.DateTime = file.ModTime().Format("2006-01-02T15:04:05")
+	}
+	if photo.Orientation == 6 || photo.Orientation == 8 {
+		x, y := photo.XDimension, photo.YDimension
+
+		photo.XDimension = y
+		photo.YDimension = x
 	}
 }

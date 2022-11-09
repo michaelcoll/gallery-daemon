@@ -33,4 +33,5 @@ type Photo struct {
 	YDimension   int
 	Model        string
 	FNumber      string
+	Orientation  int
 }

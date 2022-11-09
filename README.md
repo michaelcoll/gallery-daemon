@@ -1,3 +1,15 @@
+<p align="center">
+    <img src="https://raw.githubusercontent.com/michaelcoll/gallery-web/main/doc/logo.png" alt="Logo" /><br />
+</p>
+<p align="center">
+    A simple decentralized photo gallery
+</p>
+<p align="center">
+    <img src="https://img.shields.io/github/workflow/status/michaelcoll/gallery-daemon/build" alt="build tag" />
+    <img src="https://img.shields.io/github/v/release/michaelcoll/gallery-daemon" alt="version tag" />
+    <img src="https://img.shields.io/github/license/michaelcoll/gallery-daemon" alt="licence tag" />
+</p>
+
 # gallery-daemon
 The daemon for the gallery app
 

@@ -27,27 +27,35 @@ import (
 	"strings"
 
 	"github.com/chai2010/webp"
-	"github.com/nfnt/resize"
+	"github.com/disintegration/imaging"
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 )
 
 const (
 	quality = 80
 )
 
-func webpEncoder(imgPath string) ([]byte, error) {
+func webpEncoder(photo *model.Photo) ([]byte, error) {
 	var buf bytes.Buffer
 	var img image.Image
 
-	img, err := readRawImage(imgPath)
+	img, err := readRawImage(photo.Path)
 	if err != nil {
 		return nil, err
 	}
 
 	// Resize
-	resizedImg := resize.Resize(0, 200, img, resize.Lanczos3)
+	width, height := 0, 200
+	if photo.Orientation == 6 || photo.Orientation == 8 {
+		width, height = 200, 0
+	}
+	resizedImg := imaging.Resize(img, width, height, imaging.Lanczos)
+
+	// Rotate if necessary
+	rotatedImg := rotate(photo, resizedImg)
 
 	// Encode
-	if err = webp.Encode(&buf, resizedImg, &webp.Options{Lossless: false, Quality: quality}); err != nil {
+	if err = webp.Encode(&buf, rotatedImg, &webp.Options{Lossless: false, Quality: quality}); err != nil {
 		return nil, err
 	}
 
@@ -71,4 +79,16 @@ func readRawImage(imgPath string) (img image.Image, err error) {
 	}
 
 	return img, nil
+}
+
+func rotate(photo *model.Photo, image image.Image) image.Image {
+	if photo.Orientation == 6 {
+		return imaging.Rotate270(image)
+	} else if photo.Orientation == 8 {
+		return imaging.Rotate90(image)
+	} else if photo.Orientation != 1 {
+		fmt.Printf("Unsuported Orientation : %s\n", photo.Path)
+	}
+
+	return image
 }

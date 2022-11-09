@@ -38,7 +38,7 @@ func New(r repository.PhotoRepository) PhotoService {
 }
 
 func (s *PhotoService) indexImage(ctx context.Context, imagePath string, wg *sync.WaitGroup) *model.Photo {
-	photo := &model.Photo{Path: imagePath}
+	photo := &model.Photo{Path: imagePath, Orientation: 1}
 	extractData(photo)
 
 	if err := s.r.CreateOrReplace(ctx, *photo); err != nil {
@@ -51,7 +51,7 @@ func (s *PhotoService) indexImage(ctx context.Context, imagePath string, wg *syn
 }
 
 func (s *PhotoService) updateThumbnail(ctx context.Context, photo *model.Photo, wg *sync.WaitGroup) {
-	if thumbnail, err := webpEncoder(photo.Path); err != nil {
+	if thumbnail, err := webpEncoder(photo); err != nil {
 		log.Printf("Error while creating the thumbnail of the file %s : %v\n", photo.Path, err)
 	} else {
 		err := s.r.SetThumbnail(ctx, photo.Hash, thumbnail)

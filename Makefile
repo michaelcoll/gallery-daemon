@@ -1,7 +1,4 @@
 build:
-	go build -v .
-
-build-prod:
 	go build -v -ldflags="-s -w -X 'github.com/michaelcoll/gallery-daemon/cmd.version=v0.0.0'" .
 
 .PHONY: test
@@ -12,9 +9,6 @@ gen: sqlc
 
 clean:
 	rm proto/*.pb.go
-
-run:
-	go run . index -f ~/Images/Photos
 
 .PHONY: sqlc
 sqlc:

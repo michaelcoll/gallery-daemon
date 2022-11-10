@@ -1,0 +1,12 @@
+.github
+.idea
+db
+test
+.editorconfig
+.gitignore
+gallery-daemon
+LICENSE
+Makefile
+photos.db
+README.md
+sqlc.yml

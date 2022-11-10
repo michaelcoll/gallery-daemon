@@ -1,7 +1,9 @@
 # Start by building the application.
 FROM golang:1.19 as build
 
+ARG BUILDTIME
 ARG VERSION
+ARG REVISION
 
 WORKDIR /go/src/app
 COPY . .

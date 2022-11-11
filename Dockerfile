@@ -16,10 +16,11 @@ FROM gcr.io/distroless/base-debian11:nonroot
 
 COPY --from=build /go/bin/gallery-daemon /bin/gallery-daemon
 
-ENV NAME=docker-daemon
-ENV OWNER=no@name.com
-ENV FOLDER=.
+ENV DAEMON_NAME=docker-daemon
+ENV OWNER=no@na.me
+
+VOLUME /media
 
 EXPOSE 9000
 
-CMD ["gallery-daemon", "-n", ""]
+CMD ["gallery-daemon", "serve", "-f", "/media", "--local-db"]

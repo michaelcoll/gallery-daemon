@@ -61,7 +61,7 @@ Global Flags:
       --verbose         Verbose display
 ```
 
-# Exemple
+## Exemple
 ```
 $ ./gallery-daemon serve -p 9001 -o owner@mail.com -f ~/Images/Photos
    ______
@@ -75,5 +75,15 @@ $ ./gallery-daemon serve -p 9001 -o owner@mail.com -f ~/Images/Photos
 ✓ Up-to-date.
 ✓ Listening on 0.0.0.0:9001
 ✓ Daemon registered.
-✓ Watching folder /home/spyder/Images/Photos
+✓ Watching folder /home/user/Images/Photos
+```
+
+## Docker image usage
+```
+docker run -ti --rm \
+-e OWNER=owner@mail.com \
+-e DAEMON_NAME=docker-daemon \
+-v ~/Images/Photos:/media \
+-p 9001:9000 \
+ghcr.io/michaelcoll/gallery-daemon:latest
 ```

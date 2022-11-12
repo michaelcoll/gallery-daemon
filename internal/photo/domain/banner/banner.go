@@ -26,13 +26,21 @@ type Mode int
 
 const (
 	banner = `
-   ______
-  /\_____\
-  \ \__/_/_
-  /\ \_____\  %s %s %s
-  \ \/ / / /  ===<< %s >>===
-   \/_/\/ /
-      \/_/
+          ________
+         /\       \
+        /  \       \
+       /    \       \
+      /      \_______\
+      \      /       /
+    ___\    /   ____/___
+   /\   \  /   /\       \
+  /  \   \/___/  \       \
+ /    \       \   \       \
+/      \_______\   \_______\
+\      /       /   /       /   %s ---- %s
+ \    /       /   /       /    =====<< %s >>=====
+  \  /       /\  /       /
+   \/_______/  \/_______/      %s
 
 `
 
@@ -53,14 +61,14 @@ func Print(version string, owner string, mode Mode) {
 	var ownerStr string
 	if owner != "" {
 		ownerStr = fmt.Sprintf("%s%s%s",
-			color.WhiteString("["),
+			color.WhiteString("--|"),
 			color.HiWhiteString(owner),
-			color.WhiteString("]"))
+			color.WhiteString("|--"))
 	}
 
 	fmt.Printf(banner,
 		color.BlueString("gallery daemon"),
 		color.WhiteString(version),
-		ownerStr,
-		color.CyanString(modeStr))
+		color.CyanString(modeStr),
+		ownerStr)
 }

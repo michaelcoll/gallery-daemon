@@ -13,3 +13,5 @@ gallery-daemon
 # database
 photos.db
 photos.db-journal
+photos.db-shm
+photos.db-wal

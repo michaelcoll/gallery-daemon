@@ -1,3 +1,4 @@
+<!--suppress HtmlDeprecatedAttribute -->
 <p align="center">
     <img src="https://raw.githubusercontent.com/michaelcoll/gallery-web/main/doc/logo.png" alt="Logo" /><br />
 </p>
@@ -62,21 +63,8 @@ Global Flags:
 ```
 
 ## Exemple
-```
-$ ./gallery-daemon serve -p 9001 -o owner@mail.com -f ~/Images/Photos
-   ______
-  /\_____\
-  \ \__/_/_
-  /\ \_____\  gallery daemon v0.0.0 [owner@mail.com]
-  \ \/ / / /     -= serve mode =-
-   \/_/\/ /
-      \/_/
 
-✓ Up-to-date.
-✓ Listening on 0.0.0.0:9001
-✓ Daemon registered.
-✓ Watching folder /home/user/Images/Photos
-```
+![](doc/gallery-daemon.webp)
 
 ## Docker image usage
 ```

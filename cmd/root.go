@@ -30,7 +30,7 @@ var rootCmd = &cobra.Command{
 The daemon that index, and stream all the photos to the backend.`,
 }
 
-var version = "undefined"
+var version = "v0.0.0"
 
 var localDb bool
 var verbose bool

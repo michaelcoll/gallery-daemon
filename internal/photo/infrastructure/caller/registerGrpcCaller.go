@@ -81,7 +81,12 @@ func (c *RegisterGrpcCaller) HeartBeat(id uuid.UUID) error {
 	defer cancel()
 
 	_, err := client.HeartBeat(ctx, &daemonv1.HeartBeatRequest{
-		Uuid: id.String(),
+		Uuid:          id.String(),
+		DaemonName:    c.param.DaemonName,
+		DaemonHost:    c.param.ExternalHost,
+		DaemonPort:    c.param.GrpcPort,
+		DaemonVersion: c.param.DaemonVersion,
+		DaemonOwner:   c.param.DaemonOwner,
 	})
 	if err != nil {
 		return err

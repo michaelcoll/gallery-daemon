@@ -26,9 +26,9 @@ import (
 	"path"
 	"strings"
 
-	"github.com/chai2010/webp"
 	"github.com/disintegration/imaging"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
+	"github.com/michaelcoll/webp"
 )
 
 const (

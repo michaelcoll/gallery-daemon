@@ -36,8 +36,8 @@ func (q *Queries) CountPhotos(ctx context.Context, db DBTX) (int64, error) {
 }
 
 const createOrReplacePhoto = `-- name: CreateOrReplacePhoto :exec
-REPLACE INTO photos (hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, f_number)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+REPLACE INTO photos (hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, f_number, orientation)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type CreateOrReplacePhotoParams struct {
@@ -50,6 +50,7 @@ type CreateOrReplacePhotoParams struct {
 	YDimension   sql.NullInt64  `db:"y_dimension"`
 	Model        sql.NullString `db:"model"`
 	FNumber      sql.NullString `db:"f_number"`
+	Orientation  sql.NullInt64  `db:"orientation"`
 }
 
 func (q *Queries) CreateOrReplacePhoto(ctx context.Context, db DBTX, arg CreateOrReplacePhotoParams) error {
@@ -63,12 +64,36 @@ func (q *Queries) CreateOrReplacePhoto(ctx context.Context, db DBTX, arg CreateO
 		arg.YDimension,
 		arg.Model,
 		arg.FNumber,
+		arg.Orientation,
+	)
+	return err
+}
+
+const createOrReplaceThumbnail = `-- name: CreateOrReplaceThumbnail :exec
+REPLACE INTO thumbnails (hash, height, width, thumbnail)
+VALUES (?, ?, ?, ?)
+`
+
+type CreateOrReplaceThumbnailParams struct {
+	Hash      string `db:"hash"`
+	Height    int64  `db:"height"`
+	Width     int64  `db:"width"`
+	Thumbnail []byte `db:"thumbnail"`
+}
+
+func (q *Queries) CreateOrReplaceThumbnail(ctx context.Context, db DBTX, arg CreateOrReplaceThumbnailParams) error {
+	_, err := db.ExecContext(ctx, createOrReplaceThumbnail,
+		arg.Hash,
+		arg.Height,
+		arg.Width,
+		arg.Thumbnail,
 	)
 	return err
 }
 
 const deleteAllPhotoInPath = `-- name: DeleteAllPhotoInPath :exec
-DELETE FROM photos
+DELETE
+FROM photos
 WHERE path LIKE ?
 `
 
@@ -78,7 +103,8 @@ func (q *Queries) DeleteAllPhotoInPath(ctx context.Context, db DBTX, path string
 }
 
 const deleteAllPhotos = `-- name: DeleteAllPhotos :exec
-DELETE FROM photos
+DELETE
+FROM photos
 WHERE 1
 `
 
@@ -88,7 +114,8 @@ func (q *Queries) DeleteAllPhotos(ctx context.Context, db DBTX) error {
 }
 
 const deletePhotoByPath = `-- name: DeletePhotoByPath :exec
-DELETE FROM photos
+DELETE
+FROM photos
 WHERE path = ?
 `
 
@@ -98,26 +125,23 @@ func (q *Queries) DeletePhotoByPath(ctx context.Context, db DBTX, path string) e
 }
 
 const getPhoto = `-- name: GetPhoto :one
-SELECT hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, f_number
+SELECT hash,
+       path,
+       date_time,
+       iso,
+       exposure_time,
+       x_dimension,
+       y_dimension,
+       model,
+       f_number,
+       orientation
 FROM photos
 WHERE hash = ?
 `
 
-type GetPhotoRow struct {
-	Hash         string         `db:"hash"`
-	Path         string         `db:"path"`
-	DateTime     sql.NullString `db:"date_time"`
-	Iso          sql.NullInt64  `db:"iso"`
-	ExposureTime sql.NullString `db:"exposure_time"`
-	XDimension   sql.NullInt64  `db:"x_dimension"`
-	YDimension   sql.NullInt64  `db:"y_dimension"`
-	Model        sql.NullString `db:"model"`
-	FNumber      sql.NullString `db:"f_number"`
-}
-
-func (q *Queries) GetPhoto(ctx context.Context, db DBTX, hash string) (GetPhotoRow, error) {
+func (q *Queries) GetPhoto(ctx context.Context, db DBTX, hash string) (Photo, error) {
 	row := db.QueryRowContext(ctx, getPhoto, hash)
-	var i GetPhotoRow
+	var i Photo
 	err := row.Scan(
 		&i.Hash,
 		&i.Path,
@@ -128,25 +152,43 @@ func (q *Queries) GetPhoto(ctx context.Context, db DBTX, hash string) (GetPhotoR
 		&i.YDimension,
 		&i.Model,
 		&i.FNumber,
+		&i.Orientation,
 	)
 	return i, err
 }
 
 const getThumbnail = `-- name: GetThumbnail :one
 SELECT thumbnail
-FROM photos
+FROM thumbnails
 WHERE hash = ?
+  AND width = ?
+  AND height = ?
 `
 
-func (q *Queries) GetThumbnail(ctx context.Context, db DBTX, hash string) ([]byte, error) {
-	row := db.QueryRowContext(ctx, getThumbnail, hash)
+type GetThumbnailParams struct {
+	Hash   string `db:"hash"`
+	Width  int64  `db:"width"`
+	Height int64  `db:"height"`
+}
+
+func (q *Queries) GetThumbnail(ctx context.Context, db DBTX, arg GetThumbnailParams) ([]byte, error) {
+	row := db.QueryRowContext(ctx, getThumbnail, arg.Hash, arg.Width, arg.Height)
 	var thumbnail []byte
 	err := row.Scan(&thumbnail)
 	return thumbnail, err
 }
 
 const list = `-- name: List :many
-SELECT hash, path, date_time, iso, exposure_time, x_dimension, y_dimension, model, f_number
+SELECT hash,
+       path,
+       date_time,
+       iso,
+       exposure_time,
+       x_dimension,
+       y_dimension,
+       model,
+       f_number,
+       orientation
 FROM photos
 ORDER BY date_time DESC
 LIMIT ? OFFSET ?
@@ -157,27 +199,15 @@ type ListParams struct {
 	Offset int64 `db:"offset"`
 }
 
-type ListRow struct {
-	Hash         string         `db:"hash"`
-	Path         string         `db:"path"`
-	DateTime     sql.NullString `db:"date_time"`
-	Iso          sql.NullInt64  `db:"iso"`
-	ExposureTime sql.NullString `db:"exposure_time"`
-	XDimension   sql.NullInt64  `db:"x_dimension"`
-	YDimension   sql.NullInt64  `db:"y_dimension"`
-	Model        sql.NullString `db:"model"`
-	FNumber      sql.NullString `db:"f_number"`
-}
-
-func (q *Queries) List(ctx context.Context, db DBTX, arg ListParams) ([]ListRow, error) {
+func (q *Queries) List(ctx context.Context, db DBTX, arg ListParams) ([]Photo, error) {
 	rows, err := db.QueryContext(ctx, list, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ListRow{}
+	items := []Photo{}
 	for rows.Next() {
-		var i ListRow
+		var i Photo
 		if err := rows.Scan(
 			&i.Hash,
 			&i.Path,
@@ -188,6 +218,7 @@ func (q *Queries) List(ctx context.Context, db DBTX, arg ListParams) ([]ListRow,
 			&i.YDimension,
 			&i.Model,
 			&i.FNumber,
+			&i.Orientation,
 		); err != nil {
 			return nil, err
 		}
@@ -200,20 +231,4 @@ func (q *Queries) List(ctx context.Context, db DBTX, arg ListParams) ([]ListRow,
 		return nil, err
 	}
 	return items, nil
-}
-
-const updateThumbnail = `-- name: UpdateThumbnail :exec
-UPDATE photos
-SET thumbnail = ?
-WHERE hash = ?
-`
-
-type UpdateThumbnailParams struct {
-	Thumbnail []byte `db:"thumbnail"`
-	Hash      string `db:"hash"`
-}
-
-func (q *Queries) UpdateThumbnail(ctx context.Context, db DBTX, arg UpdateThumbnailParams) error {
-	_, err := db.ExecContext(ctx, updateThumbnail, arg.Thumbnail, arg.Hash)
-	return err
 }

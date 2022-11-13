@@ -84,14 +84,14 @@ In this mode it will :
 	},
 }
 
-var grpcPort int32
+var grpcPort uint32
 var externalHost string
 var name string
 var owner string
 var reIndex bool
 
 func init() {
-	serveCmd.Flags().Int32VarP(&grpcPort, "port", "p", 9000, "Grpc Port")
+	serveCmd.Flags().Uint32VarP(&grpcPort, "port", "p", 9000, "Grpc Port")
 	serveCmd.Flags().StringVarP(&externalHost, "external-host", "H", "localhost", "External host")
 	serveCmd.Flags().StringVarP(&name, "name", "n", "localhost-daemon", "Daemon name")
 	serveCmd.Flags().StringVarP(&owner, "owner", "o", "no@name.com", "Daemon owner email")

@@ -20,5 +20,5 @@ import "github.com/google/uuid"
 
 type RegisterResponse struct {
 	Id    uuid.UUID
-	ExpIn int32
+	ExpIn uint32
 }

@@ -22,7 +22,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"sync"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -30,8 +29,9 @@ import (
 	"github.com/fatih/color"
 	"github.com/fsnotify/fsnotify"
 
-	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/consts"
 	"github.com/michaelcoll/rfsnotify"
+
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/consts"
 )
 
 type stats struct {
@@ -104,8 +104,7 @@ func (s *PhotoService) handleEvent(event fsnotify.Event) {
 	}
 
 	if isCreateEvent(event) && hasExtension(event.Name, consts.SupportedExtensions) {
-		var wg sync.WaitGroup
-		s.indexImage(context.Background(), event.Name, &wg)
+		s.indexImage(context.Background(), event.Name)
 		s.watcherStats.inserted.Add(1)
 	} else if isDeleteEvent(event) && hasExtension(event.Name, consts.SupportedExtensions) {
 		s.deleteImage(context.Background(), event.Name)

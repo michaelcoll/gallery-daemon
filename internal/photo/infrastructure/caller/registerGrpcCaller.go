@@ -26,8 +26,9 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 	daemonv1 "github.com/michaelcoll/gallery-proto/gen/proto/go/daemon/v1"
+
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 )
 
 const (

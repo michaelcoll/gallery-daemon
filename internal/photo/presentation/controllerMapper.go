@@ -28,10 +28,10 @@ func toGrpc(photo model.Photo) *photov1.Photo {
 		Path: photo.Path,
 
 		DateTime:     photo.DateTime,
-		Iso:          int32(photo.Iso),
+		Iso:          uint32(photo.Iso),
 		ExposureTime: photo.ExposureTime,
-		XDimension:   int32(photo.XDimension),
-		YDimension:   int32(photo.YDimension),
+		XDimension:   uint32(photo.XDimension),
+		YDimension:   uint32(photo.YDimension),
 		Model:        photo.Model,
 		FNumber:      photo.FNumber,
 	}

@@ -18,12 +18,14 @@ package service
 
 import (
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"strings"
 	"time"
+
+	"github.com/fatih/color"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 
 	"github.com/google/uuid"
 )
@@ -32,7 +34,7 @@ type RegisterService struct {
 	c        RegisterCaller
 	param    model.ServeParameters
 	daemonId uuid.UUID
-	expIn    int32
+	expIn    uint32
 
 	connectionUp bool
 	hasConnected bool
@@ -45,7 +47,7 @@ func NewRegisterService(c RegisterCaller, param model.ServeParameters) RegisterS
 
 func (s *RegisterService) Register() {
 	for {
-		if !s.connectionUp {
+		if !s.hasConnected {
 			response, err := s.c.Register()
 			if err != nil {
 				s.connectionProblem(err)

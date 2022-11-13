@@ -18,5 +18,12 @@ type Photo struct {
 	YDimension   sql.NullInt64  `db:"y_dimension"`
 	Model        sql.NullString `db:"model"`
 	FNumber      sql.NullString `db:"f_number"`
-	Thumbnail    []byte         `db:"thumbnail"`
+	Orientation  sql.NullInt64  `db:"orientation"`
+}
+
+type Thumbnail struct {
+	Hash      string `db:"hash"`
+	Height    int64  `db:"height"`
+	Width     int64  `db:"width"`
+	Thumbnail []byte `db:"thumbnail"`
 }

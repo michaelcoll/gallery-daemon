@@ -52,6 +52,9 @@ func (r *PhotoDBRepository) toInfra(photo model.Photo) (sqlc.CreateOrReplacePhot
 	if err := params.FNumber.Scan(photo.FNumber); err != nil {
 		return sqlc.CreateOrReplacePhotoParams{}, err
 	}
+	if err := params.Orientation.Scan(photo.Orientation); err != nil {
+		return sqlc.CreateOrReplacePhotoParams{}, err
+	}
 
 	return params, nil
 }
@@ -84,36 +87,9 @@ func (r *PhotoDBRepository) toDomain(photo sqlc.Photo) (model.Photo, error) {
 	if photo.FNumber.Valid {
 		m.FNumber = photo.FNumber.String
 	}
+	if photo.Orientation.Valid {
+		m.Orientation = int(photo.Orientation.Int64)
+	}
 
 	return *m, nil
-}
-
-func (r *PhotoDBRepository) toDomainGet(photo sqlc.GetPhotoRow) (model.Photo, error) {
-	return r.toDomain(sqlc.Photo{
-		Hash: photo.Hash,
-		Path: photo.Path,
-
-		DateTime:     photo.DateTime,
-		Iso:          photo.Iso,
-		ExposureTime: photo.ExposureTime,
-		XDimension:   photo.XDimension,
-		YDimension:   photo.YDimension,
-		Model:        photo.Model,
-		FNumber:      photo.FNumber,
-	})
-}
-
-func (r *PhotoDBRepository) toDomainList(photo sqlc.ListRow) (model.Photo, error) {
-	return r.toDomain(sqlc.Photo{
-		Hash: photo.Hash,
-		Path: photo.Path,
-
-		DateTime:     photo.DateTime,
-		Iso:          photo.Iso,
-		ExposureTime: photo.ExposureTime,
-		XDimension:   photo.XDimension,
-		YDimension:   photo.YDimension,
-		Model:        photo.Model,
-		FNumber:      photo.FNumber,
-	})
 }

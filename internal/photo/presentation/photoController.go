@@ -26,16 +26,17 @@ import (
 	"github.com/fatih/color"
 	"google.golang.org/grpc"
 
+	photov1 "github.com/michaelcoll/gallery-proto/gen/proto/go/photo/v1"
+
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/repository"
-	photov1 "github.com/michaelcoll/gallery-proto/gen/proto/go/photo/v1"
 )
 
 type PhotoController struct {
 	photov1.UnimplementedPhotoServiceServer
 
 	r    repository.PhotoRepository
-	port int32
+	port uint32
 }
 
 func New(r repository.PhotoRepository, param model.ServeParameters) PhotoController {
@@ -61,10 +62,7 @@ func (c *PhotoController) Serve() {
 // GetPhotos returns all photos by given filter
 func (c *PhotoController) GetPhotos(ctx context.Context, request *photov1.GetPhotosRequest) (*photov1.GetPhotosResponse, error) {
 
-	c.r.Connect(true)
-	defer c.r.Close()
-
-	var pageSize int32
+	var pageSize uint32
 	if request.PageSize == 0 {
 		pageSize = 25
 	} else {
@@ -86,9 +84,6 @@ func (c *PhotoController) GetPhotos(ctx context.Context, request *photov1.GetPho
 
 func (c *PhotoController) GetByHash(ctx context.Context, request *photov1.GetByHashRequest) (*photov1.GetByHashResponse, error) {
 
-	c.r.Connect(true)
-	defer c.r.Close()
-
 	photo, err := c.r.Get(ctx, request.Hash)
 	if err != nil {
 		return nil, err
@@ -102,18 +97,12 @@ func (c *PhotoController) ExistsByHash(ctx context.Context, request *photov1.Exi
 		return &photov1.ExistsByHashResponse{Exists: false}, nil
 	}
 
-	c.r.Connect(true)
-	defer c.r.Close()
-
 	exists := c.r.Exists(ctx, request.Hash)
 
 	return &photov1.ExistsByHashResponse{Exists: exists}, nil
 }
 
 func (c *PhotoController) ContentByHash(filter *photov1.ContentByHashRequest, stream photov1.PhotoService_ContentByHashServer) error {
-
-	c.r.Connect(true)
-	defer c.r.Close()
 
 	err := c.r.ReadContent(stream.Context(), filter.Hash, &streamReader{stream: stream})
 	if err != nil {
@@ -123,12 +112,9 @@ func (c *PhotoController) ContentByHash(filter *photov1.ContentByHashRequest, st
 	return nil
 }
 
-func (c *PhotoController) ThumbnailByHash(filter *photov1.ThumbnailByHashRequest, stream photov1.PhotoService_ThumbnailByHashServer) error {
+func (c *PhotoController) ThumbnailByHash(req *photov1.ThumbnailByHashRequest, stream photov1.PhotoService_ThumbnailByHashServer) error {
 
-	c.r.Connect(true)
-	defer c.r.Close()
-
-	err := c.r.ReadThumbnail(stream.Context(), filter.Hash, &streamReaderThumbnail{stream: stream})
+	err := c.r.ReadThumbnail(stream.Context(), req.Hash, req.Width, req.Height, &streamReaderThumbnail{stream: stream})
 	if err != nil {
 		return err
 	}

@@ -91,7 +91,7 @@ func (r *PhotoDBRepository) Get(ctx context.Context, hash string) (model.Photo, 
 	if err != nil {
 		return model.Photo{}, err
 	}
-	domain, err := r.toDomainGet(photo)
+	domain, err := r.toDomain(photo)
 	if err != nil {
 		return model.Photo{}, err
 	}
@@ -108,7 +108,7 @@ func (r *PhotoDBRepository) Exists(ctx context.Context, hash string) bool {
 	return count == 1
 }
 
-func (r *PhotoDBRepository) List(ctx context.Context, page int32, pageSize int32) ([]model.Photo, error) {
+func (r *PhotoDBRepository) List(ctx context.Context, page uint32, pageSize uint32) ([]model.Photo, error) {
 	list, err := r.q.List(ctx, r.c, sqlc.ListParams{
 		Limit:  int64(pageSize),
 		Offset: int64(page * pageSize),
@@ -119,7 +119,7 @@ func (r *PhotoDBRepository) List(ctx context.Context, page int32, pageSize int32
 
 	photos := make([]model.Photo, len(list))
 	for i, photo := range list {
-		domain, err := r.toDomainList(photo)
+		domain, err := r.toDomain(photo)
 		if err != nil {
 			return nil, err
 		}
@@ -172,10 +172,27 @@ func (r *PhotoDBRepository) ReadContent(ctx context.Context, hash string, reader
 	return nil
 }
 
-func (r *PhotoDBRepository) ReadThumbnail(ctx context.Context, hash string, reader repository.ImageReader) error {
-	thumbnailBytes, err := r.q.GetThumbnail(ctx, r.c, hash)
+func (r *PhotoDBRepository) ReadThumbnail(ctx context.Context, hash string, width uint32, height uint32, reader repository.ImageReader) error {
+
+	var w, h uint32
+	if width > 0 && height > 0 {
+		w = width
+	} else if width == 0 && height == 0 {
+		w = 200
+	} else {
+		w, h = width, height
+	}
+
+	thumbnailBytes, err := r.q.GetThumbnail(ctx, r.c, sqlc.GetThumbnailParams{
+		Hash:   hash,
+		Width:  int64(w),
+		Height: int64(h),
+	})
 	if err == sql.ErrNoRows {
-		return status.Error(codes.NotFound, "media not found")
+		thumbnailBytes, err = r.createAndUpdateThumbnail(ctx, hash, w, h)
+		if err != nil {
+			return err
+		}
 	}
 	if err != nil {
 		return err
@@ -188,10 +205,39 @@ func (r *PhotoDBRepository) ReadThumbnail(ctx context.Context, hash string, read
 	return nil
 }
 
-func (r *PhotoDBRepository) SetThumbnail(ctx context.Context, hash string, thumbnail []byte) error {
-	if err := r.q.UpdateThumbnail(ctx, r.c, sqlc.UpdateThumbnailParams{
-		Thumbnail: thumbnail,
+func (r *PhotoDBRepository) createAndUpdateThumbnail(ctx context.Context, hash string, width uint32, height uint32) ([]byte, error) {
+	photo, err := r.q.GetPhoto(ctx, r.c, hash)
+	if err == sql.ErrNoRows {
+		return nil, status.Error(codes.NotFound, "media not found")
+	}
+
+	path := fmt.Sprintf("%s%s", r.databaseLocation, photo.Path)
+	orientation := getOrientation(photo)
+
+	if thumbnail, err := webpEncoder(path, orientation); err != nil {
+		return nil, status.Errorf(codes.Internal, "Error while creating the thumbnail of the file %s : %v\n", photo.Path, err)
+	} else {
+		if err := r.createOrReplaceThumbnail(ctx, photo.Hash, width, height, thumbnail); err != nil {
+			return nil, status.Errorf(codes.Internal, "Error save thumbnail in database (%v).\n", err)
+		}
+
+		return thumbnail, nil
+	}
+}
+
+func getOrientation(photo sqlc.Photo) uint {
+	if photo.Orientation.Valid {
+		return uint(photo.Orientation.Int64)
+	}
+	return 1
+}
+
+func (r *PhotoDBRepository) createOrReplaceThumbnail(ctx context.Context, hash string, width uint32, height uint32, thumbnail []byte) error {
+	if err := r.q.CreateOrReplaceThumbnail(ctx, r.c, sqlc.CreateOrReplaceThumbnailParams{
 		Hash:      hash,
+		Width:     int64(width),
+		Height:    int64(height),
+		Thumbnail: thumbnail,
 	}); err != nil {
 		return err
 	}

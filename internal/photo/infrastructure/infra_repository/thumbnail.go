@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package service
+package infra_repository
 
 import (
 	"bytes"
@@ -27,7 +27,6 @@ import (
 	"strings"
 
 	"github.com/disintegration/imaging"
-	"github.com/michaelcoll/gallery-daemon/internal/photo/domain/model"
 	"github.com/michaelcoll/webp"
 )
 
@@ -35,24 +34,24 @@ const (
 	quality = 80
 )
 
-func webpEncoder(photo *model.Photo) ([]byte, error) {
+func webpEncoder(path string, orientation uint) ([]byte, error) {
 	var buf bytes.Buffer
 	var img image.Image
 
-	img, err := readRawImage(photo.Path)
+	img, err := readRawImage(path)
 	if err != nil {
 		return nil, err
 	}
 
 	// Resize
 	width, height := 0, 200
-	if photo.Orientation == 6 || photo.Orientation == 8 {
+	if orientation == 6 || orientation == 8 {
 		width, height = 200, 0
 	}
 	resizedImg := imaging.Resize(img, width, height, imaging.Lanczos)
 
 	// Rotate if necessary
-	rotatedImg := rotate(photo, resizedImg)
+	rotatedImg := rotate(path, orientation, resizedImg)
 
 	// Encode
 	if err = webp.Encode(&buf, rotatedImg, &webp.Options{Lossless: false, Quality: quality}); err != nil {
@@ -81,13 +80,13 @@ func readRawImage(imgPath string) (img image.Image, err error) {
 	return img, nil
 }
 
-func rotate(photo *model.Photo, image image.Image) image.Image {
-	if photo.Orientation == 6 {
+func rotate(path string, orientation uint, image image.Image) image.Image {
+	if orientation == 6 {
 		return imaging.Rotate270(image)
-	} else if photo.Orientation == 8 {
+	} else if orientation == 8 {
 		return imaging.Rotate90(image)
-	} else if photo.Orientation != 1 {
-		fmt.Printf("Unsuported Orientation : %s\n", photo.Path)
+	} else if orientation != 1 {
+		fmt.Printf("Unsuported Orientation : %s\n", path)
 	}
 
 	return image

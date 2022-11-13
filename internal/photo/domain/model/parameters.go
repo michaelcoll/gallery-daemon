@@ -17,7 +17,7 @@
 package model
 
 type ServeParameters struct {
-	GrpcPort      int32
+	GrpcPort      uint32
 	ExternalHost  string
 	DaemonName    string
 	DaemonVersion string

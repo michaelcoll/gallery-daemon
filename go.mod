@@ -12,7 +12,7 @@ require (
 	github.com/michaelcoll/gallery-proto v0.9.1
 	github.com/michaelcoll/rfsnotify v1.0.0
 	github.com/michaelcoll/webp v1.2.2
-	github.com/schollz/progressbar/v3 v3.12.1
+	github.com/schollz/progressbar/v3 v3.12.2
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
 	google.golang.org/grpc v1.51.0
@@ -31,8 +31,8 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/image v0.1.0 // indirect
 	golang.org/x/net v0.2.0 // indirect
-	golang.org/x/sys v0.2.0 // indirect
-	golang.org/x/term v0.2.0 // indirect
+	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/term v0.3.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
 	google.golang.org/genproto v0.0.0-20221118155620-16455021b5e6 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect

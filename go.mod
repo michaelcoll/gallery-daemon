@@ -3,7 +3,7 @@ module github.com/michaelcoll/gallery-daemon
 go 1.19
 
 require (
-	github.com/cozy/goexif2 v0.0.0-20200819113101-00e1cc8cc9d3
+	github.com/cozy/goexif2 v1.2.0
 	github.com/disintegration/imaging v1.6.2
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.6.0
@@ -29,12 +29,12 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	golang.org/x/image v0.2.0 // indirect
-	golang.org/x/net v0.4.0 // indirect
+	golang.org/x/image v0.3.0 // indirect
+	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/term v0.4.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
-	google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37 // indirect
+	golang.org/x/text v0.6.0 // indirect
+	google.golang.org/genproto v0.0.0-20230109162033-3c3c17ce83e6 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

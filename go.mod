@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/cozy/goexif2 v1.2.0
 	github.com/disintegration/imaging v1.6.2
-	github.com/fatih/color v1.13.0
+	github.com/fatih/color v1.14.0
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/mattn/go-sqlite3 v1.14.16

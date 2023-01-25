@@ -30,8 +30,8 @@ github.com/mattn/go-runewidth v0.0.14 h1:+xnbZSEeDbOIg5/mE6JF0w6n9duR1l3/WmbinWV
 github.com/mattn/go-runewidth v0.0.14/go.mod h1:Jdepj2loyihRzMpdS35Xk/zdY8IAYHsh153qUoGf23w=
 github.com/mattn/go-sqlite3 v1.14.16 h1:yOQRA0RpS5PFz/oikGwBEqvAWhWg5ufRz4ETLjwpU1Y=
 github.com/mattn/go-sqlite3 v1.14.16/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
-github.com/michaelcoll/gallery-proto v0.9.1 h1:vGbT8+DdS2T6QYoUYes48EPa2J/LAAKgE6/Y/r7pqIg=
-github.com/michaelcoll/gallery-proto v0.9.1/go.mod h1:u+8HDPcdiLSkZgArkWvFTD3fsGI7sddH6iZRH0An0aE=
+github.com/michaelcoll/gallery-proto v0.11.0 h1:xY2lWD/TTN476F20/Ys4+RgXkXUOvCHhQoAFKRIWTYs=
+github.com/michaelcoll/gallery-proto v0.11.0/go.mod h1:u+8HDPcdiLSkZgArkWvFTD3fsGI7sddH6iZRH0An0aE=
 github.com/michaelcoll/rfsnotify v1.0.0 h1:9Dmd3KIHLn46+FtU6cUvAWiTQuxPWrXOtAgiAMFt7xo=
 github.com/michaelcoll/rfsnotify v1.0.0/go.mod h1:LiPVjEwiKIX0/iYVScgIdyksskydqP6AMemOiQDe5zE=
 github.com/michaelcoll/webp v1.2.2 h1:U0F2o7taK6IjRWoFtR+Bfeb1EQozS2qQ1IjunJ9rd2k=

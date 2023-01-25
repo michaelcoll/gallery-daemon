@@ -25,6 +25,8 @@ import (
 
 	"github.com/fatih/color"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	photov1 "github.com/michaelcoll/gallery-proto/gen/proto/go/photo/v1"
 
@@ -62,14 +64,23 @@ func (c *PhotoController) Serve() {
 // GetPhotos returns all photos by given filter
 func (c *PhotoController) GetPhotos(ctx context.Context, request *photov1.GetPhotosRequest) (*photov1.GetPhotosResponse, error) {
 
-	var pageSize uint32
-	if request.PageSize == 0 {
-		pageSize = 25
+	var limit uint32
+	if request.Limit == 0 {
+		limit = 25
 	} else {
-		pageSize = request.PageSize
+		limit = request.Limit
 	}
 
-	list, err := c.r.List(ctx, request.Page, pageSize)
+	count, err := c.r.CountPhotos(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if request.Offset > count {
+		return nil, status.Errorf(codes.OutOfRange, "Offset value is greater than the total number of photos (offset: %d, total: %d)", request.Offset, count)
+	}
+
+	list, err := c.r.List(ctx, request.Offset, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +90,7 @@ func (c *PhotoController) GetPhotos(ctx context.Context, request *photov1.GetPho
 		responseList[i] = toGrpc(photo)
 	}
 
-	return &photov1.GetPhotosResponse{Photos: responseList}, nil
+	return &photov1.GetPhotosResponse{Photos: responseList, Total: count}, nil
 }
 
 func (c *PhotoController) GetByHash(ctx context.Context, request *photov1.GetByHashRequest) (*photov1.GetByHashResponse, error) {

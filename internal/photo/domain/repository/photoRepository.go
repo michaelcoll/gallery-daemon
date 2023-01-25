@@ -37,9 +37,9 @@ type PhotoRepository interface {
 	ReadContent(ctx context.Context, hash string, reader ImageReader) error
 	ReadThumbnail(ctx context.Context, hash string, width uint32, height uint32, reader ImageReader) error
 	Exists(ctx context.Context, hash string) bool
-	List(ctx context.Context, page uint32, pageSize uint32) ([]model.Photo, error)
+	List(ctx context.Context, offset uint32, limit uint32) ([]model.Photo, error)
 	Delete(ctx context.Context, path string) error
 	DeleteAllPhotoInPath(ctx context.Context, path string) error
 	DeleteAll(ctx context.Context) error
-	CountPhotos(ctx context.Context) (int, error)
+	CountPhotos(ctx context.Context) (uint32, error)
 }

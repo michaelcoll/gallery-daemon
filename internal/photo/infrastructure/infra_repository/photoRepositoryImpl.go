@@ -108,10 +108,10 @@ func (r *PhotoDBRepository) Exists(ctx context.Context, hash string) bool {
 	return count == 1
 }
 
-func (r *PhotoDBRepository) List(ctx context.Context, page uint32, pageSize uint32) ([]model.Photo, error) {
+func (r *PhotoDBRepository) List(ctx context.Context, offset uint32, limit uint32) ([]model.Photo, error) {
 	list, err := r.q.List(ctx, r.c, sqlc.ListParams{
-		Limit:  int64(pageSize),
-		Offset: int64(page * pageSize),
+		Limit:  int64(limit),
+		Offset: int64(offset),
 	})
 	if err != nil {
 		return nil, err
@@ -282,11 +282,11 @@ func (r *PhotoDBRepository) DeleteAll(ctx context.Context) error {
 	return nil
 }
 
-func (r *PhotoDBRepository) CountPhotos(ctx context.Context) (int, error) {
+func (r *PhotoDBRepository) CountPhotos(ctx context.Context) (uint32, error) {
 	count, err := r.q.CountPhotos(ctx, r.c)
 	if err != nil {
 		return 0, err
 	}
 
-	return int(count), nil
+	return uint32(count), nil
 }

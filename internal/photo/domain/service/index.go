@@ -41,7 +41,7 @@ func (s *PhotoService) Index(ctx context.Context, path string) {
 	if err != nil {
 		log.Fatalf("Can't read the count of photos in the database (%v)\n", err)
 	}
-	if len(files) != count {
+	if len(files) != int(count) {
 		s.ReIndex(ctx, path)
 	} else {
 		fmt.Printf("%s Up-to-date. \n", color.GreenString("✓"))

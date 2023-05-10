@@ -1,0 +1,3 @@
+version: "1"
+addon_out: "internal/photo/infrastructure/db"
+database_name: "photos.db"

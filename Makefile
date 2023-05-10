@@ -15,7 +15,8 @@ clean:
 
 .PHONY: sqlc
 sqlc:
-	sqlc generate
+	sqlc generate \
+    	&& sqlc-addon generate --quiet
 
 dep-upgrade:
 	go get -u

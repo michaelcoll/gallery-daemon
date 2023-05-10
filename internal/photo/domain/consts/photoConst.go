@@ -31,11 +31,11 @@ var SupportedExtensions = []string{
 }
 
 var IgnoredFiles = []string{
-	DatabaseName,
-	DatabaseName + "-shm",
-	DatabaseName + "-wal",
+	databaseName,
+	databaseName + "-shm",
+	databaseName + "-wal",
 }
 
 const (
-	DatabaseName = "photos.db"
+	databaseName = "photos.db"
 )

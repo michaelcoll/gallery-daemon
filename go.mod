@@ -14,7 +14,7 @@ require (
 	github.com/michaelcoll/webp v1.2.2
 	github.com/schollz/progressbar/v3 v3.13.1
 	github.com/spf13/cobra v1.7.0
-	github.com/stretchr/testify v1.8.3
+	github.com/stretchr/testify v1.8.4
 	google.golang.org/grpc v1.56.0
 )
 

@@ -8,7 +8,7 @@ require (
 	github.com/fatih/color v1.15.0
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/google/uuid v1.3.0
-	github.com/mattn/go-sqlite3 v1.14.16
+	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/michaelcoll/gallery-proto v0.11.0
 	github.com/michaelcoll/rfsnotify v1.0.0
 	github.com/michaelcoll/webp v1.2.2

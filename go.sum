@@ -1,5 +1,5 @@
-github.com/cozy/goexif2 v1.2.0 h1:cBPS+7niEtwehOYBcDBSyvo+x6LPcaFVvm7Nsu6fxeM=
-github.com/cozy/goexif2 v1.2.0/go.mod h1:mBLIra4pwtUmAakLxbwF8v94QD5PdluAW1i7pisBk3w=
+github.com/cozy/goexif2 v1.3.1 h1:wgUyVBJ55xWOohHkF5N9LwTbkKAheZXdw6S6Oci687c=
+github.com/cozy/goexif2 v1.3.1/go.mod h1:mBLIra4pwtUmAakLxbwF8v94QD5PdluAW1i7pisBk3w=
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

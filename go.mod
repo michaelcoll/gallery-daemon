@@ -7,7 +7,7 @@ require (
 	github.com/disintegration/imaging v1.6.2
 	github.com/fatih/color v1.15.0
 	github.com/fsnotify/fsnotify v1.7.0
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/michaelcoll/gallery-proto v0.11.0
 	github.com/michaelcoll/rfsnotify v1.0.0

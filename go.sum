@@ -23,8 +23,8 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/mattn/go-sqlite3 v1.14.22 h1:2gZY6PC6kBnID23Tichd1K+Z0oS6nE/XwU+Vz/5o4kU=
 github.com/mattn/go-sqlite3 v1.14.22/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
-github.com/michaelcoll/gallery-proto v0.11.0 h1:xY2lWD/TTN476F20/Ys4+RgXkXUOvCHhQoAFKRIWTYs=
-github.com/michaelcoll/gallery-proto v0.11.0/go.mod h1:u+8HDPcdiLSkZgArkWvFTD3fsGI7sddH6iZRH0An0aE=
+github.com/michaelcoll/gallery-proto v0.11.1 h1:6XODP8jltcs4DIp+iNjO1aBXv+BNCOhgSiTgyKKVQM0=
+github.com/michaelcoll/gallery-proto v0.11.1/go.mod h1:u+8HDPcdiLSkZgArkWvFTD3fsGI7sddH6iZRH0An0aE=
 github.com/michaelcoll/rfsnotify v1.0.0 h1:9Dmd3KIHLn46+FtU6cUvAWiTQuxPWrXOtAgiAMFt7xo=
 github.com/michaelcoll/rfsnotify v1.0.0/go.mod h1:LiPVjEwiKIX0/iYVScgIdyksskydqP6AMemOiQDe5zE=
 github.com/michaelcoll/webp v1.2.2 h1:U0F2o7taK6IjRWoFtR+Bfeb1EQozS2qQ1IjunJ9rd2k=

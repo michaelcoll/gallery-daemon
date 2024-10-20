@@ -12,7 +12,7 @@ RUN go mod download
 RUN go build -o /go/bin/gallery-daemon -ldflags="-s -w -X 'github.com/michaelcoll/gallery-daemon/cmd.version=$VERSION'"
 
 # Now copy it into our base image.
-FROM gcr.io/distroless/base-debian11:nonroot
+FROM gcr.io/distroless/base-debian12:nonroot
 
 COPY --from=build /go/bin/gallery-daemon /bin/gallery-daemon
 

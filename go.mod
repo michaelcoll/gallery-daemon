@@ -8,7 +8,7 @@ require (
 	github.com/cozy/goexif2 v1.3.1
 	github.com/disintegration/imaging v1.6.2
 	github.com/fatih/color v1.18.0
-	github.com/fsnotify/fsnotify v1.7.0
+	github.com/fsnotify/fsnotify v1.8.0
 	github.com/google/uuid v1.6.0
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/michaelcoll/gallery-proto v0.11.1

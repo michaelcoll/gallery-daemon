@@ -1,9 +1,6 @@
 module github.com/michaelcoll/gallery-daemon
 
 go 1.22
-
-toolchain go1.22.7
-
 require (
 	github.com/cozy/goexif2 v1.3.1
 	github.com/disintegration/imaging v1.6.2
@@ -17,7 +14,7 @@ require (
 	github.com/schollz/progressbar/v3 v3.17.0
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
-	google.golang.org/grpc v1.67.1
+	google.golang.org/grpc v1.68.0
 )
 
 require (

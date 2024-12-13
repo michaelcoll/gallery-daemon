@@ -1,6 +1,7 @@
 module github.com/michaelcoll/gallery-daemon
 
 go 1.22
+
 toolchain go1.22.9
 
 require (
@@ -16,7 +17,7 @@ require (
 	github.com/schollz/progressbar/v3 v3.17.1
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.10.0
-	google.golang.org/grpc v1.68.1
+	google.golang.org/grpc v1.69.0
 )
 
 require (

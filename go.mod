@@ -1,7 +1,7 @@
 module github.com/michaelcoll/gallery-daemon
 
 go 1.22
-toolchain go1.22.9
+toolchain go1.24.1
 
 require (
 	github.com/cozy/goexif2 v1.3.1
@@ -9,7 +9,7 @@ require (
 	github.com/fatih/color v1.18.0
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/google/uuid v1.6.0
-	github.com/mattn/go-sqlite3 v1.14.24
+	github.com/mattn/go-sqlite3 v1.14.25
 	github.com/michaelcoll/gallery-proto v0.11.1
 	github.com/michaelcoll/rfsnotify v1.0.0
 	github.com/michaelcoll/webp v1.2.2
